@@ -1,11 +1,24 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+/* Tailwind v4 tokens: shared by utilities and the SOC component stylesheet. */
+@theme {
+  --color-cyber-void: #06080f;
+  --color-cyber-slate: #0f172a;
+  --color-neon-cyan: #00f0ff;
+  --color-neon-magenta: #ff007f;
+  --color-neon-emerald: #00ff9d;
+  --color-neon-amber: #ffb800;
+  --shadow-neon-cyan: 0 0 15px #00f0ff80;
+  --shadow-neon-magenta: 0 0 15px #ff007f80;
+  --shadow-neon-emerald: 0 0 15px #00ff9d80;
+  --shadow-cyber-panel: 0 0 25px rgba(6, 182, 212, 0.1);
+}
 
 @layer base {
   body {
-    background-color: #0B1020;
-    color: #F9FAFB;
+    background-color: #0b1020;
+    color: #f9fafb;
   }
 }
 
@@ -40,13 +53,13 @@
 }
 
 .gradient-text-primary {
-  background: linear-gradient(135deg, #00E5A8 0%, #4F8CFF 100%);
+  background: linear-gradient(135deg, #00e5a8 0%, #4f8cff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gradient-text-danger {
-  background: linear-gradient(135deg, #FF4D6D 0%, #F59E0B 100%);
+  background: linear-gradient(135deg, #ff4d6d 0%, #f59e0b 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -57,12 +70,12 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B1020;
+  background: #0b1020;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1F293D;
+  background: #1f293d;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #00E5A8;
+  background: #00e5a8;
 }

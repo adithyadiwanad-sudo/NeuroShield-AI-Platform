@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { LandingPage } from './pages/LandingPage';
@@ -13,6 +13,7 @@ import { Auth } from './pages/Auth';
 
 export const App = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const isDashboard = useLocation().pathname === '/dashboard';
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0B1020] text-gray-100 font-sans selection:bg-[#00E5A8]/30 selection:text-[#00E5A8]">
@@ -21,7 +22,7 @@ export const App = () => {
       <Navbar onOpenAuth={() => setAuthModalOpen(true)} />
 
       {/* Main Content Viewport */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      <main className={isDashboard ? 'flex-1 w-full bg-[#090A0F]' : 'flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6'}>
         <Routes>
           <Route path="/" element={<LandingPage onOpenAuth={() => setAuthModalOpen(true)} />} />
           <Route path="/scam-detector" element={<ScamDetector />} />
@@ -40,7 +41,7 @@ export const App = () => {
       )}
 
       {/* Footer */}
-      <Footer />
+      {!isDashboard && <Footer />}
     </div>
   );
 };

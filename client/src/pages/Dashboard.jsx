@@ -1,402 +1,623 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Activity, Shield, AlertTriangle, CheckCircle, Search, RefreshCw, Filter, Cpu, ArrowUpRight, ShieldAlert, BarChart2 } from 'lucide-react';
-import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, AreaChart, Area, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import api from '../services/api';
-import { useToast } from '../context/ToastContext';
+import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Activity,
+  Cpu,
+  Globe,
+  ShieldAlert,
+  Zap,
+  RefreshCw,
+  ArrowUpRight,
+  X,
+  BrainCircuit,
+  BarChart3,
+  Monitor,
+} from "lucide-react";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
+import api from "../services/api";
+import DashboardLayout from "../components/layout/DashboardLayout";
+import LiveThreatStream from "../components/dashboard/LiveThreatStream";
+import AgentWorkflowTab from "../components/dashboard/right_panel/AgentWorkflowTab";
+import XAIInspector from "../components/dashboard/right_panel/XAIInspector";
+import ModelAnalyticsTab from "../components/dashboard/right_panel/ModelAnalyticsTab";
+import AttackSimulator, {
+  createSimulatedIncident,
+} from "../components/dashboard/AttackSimulator";
+import TimeTravelDebugger from "../components/dashboard/TimeTravelDebugger";
+import MultiModalScanner from "../components/dashboard/MultiModalScanner";
+import PacketTerminal from "../components/dashboard/PacketTerminal";
+import { FRAME_MS, LAST_FRAME } from "../components/dashboard/workflow";
+import ThreatInspectorTab, {
+  ActionSuite,
+  RiskGauge,
+} from "../components/dashboard/right_panel/ThreatInspectorTab";
+import {
+  demoIncidents,
+  demoTrend,
+  normalizeScan,
+} from "../components/dashboard/telemetry";
+const ThreatGlobe = lazy(() => import("../components/dashboard/ThreatGlobe"));
+const tabs = [
+  { id: "details", label: "Details", icon: ShieldAlert },
+  { id: "xai", label: "XAI Feature Attribution", icon: BrainCircuit },
+  { id: "actions", label: "Actions", icon: Zap },
+  { id: "stats", label: "Model Stats", icon: BarChart3 },
+];
 
-export const Dashboard = ({ onOpenAuth }) => {
-  const [metrics, setMetrics] = useState(null);
-  const [charts, setCharts] = useState(null);
-  const [recentScans, setRecentScans] = useState([]);
+export const Dashboard = () => {
+  const [data, setData] = useState(null);
+  const [demo, setDemo] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [riskFilter, setRiskFilter] = useState('All');
-
-  const navigate = useNavigate();
-  const { addToast } = useToast();
-
-  const fetchAnalytics = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.get('/dashboard/analytics');
-      if (res.data.success) {
-        setMetrics(res.data.metrics);
-        setCharts(res.data.charts);
-        setRecentScans(res.data.recentScans || []);
+  const [error, setError] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
+  const [tab, setTab] = useState("details");
+  const [frame, setFrame] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [mode, setMode] = useState("soc");
+  const [injected, setInjected] = useState([]);
+  const [history, setHistory] = useState({});
+  const [statuses, setStatuses] = useState({});
+  const controller = useRef();
+  const knownIds = useRef(null);
+  const demoRef = useRef(false);
+  useEffect(() => {
+    setFrame(0);
+    setPlaying(Boolean(selectedId));
+  }, [selectedId, demo]);
+  useEffect(() => {
+    if (!playing || !selectedId) return;
+    const timer = setInterval(
+      () => setFrame((current) => Math.min(LAST_FRAME, current + 1)),
+      FRAME_MS,
+    );
+    return () => clearInterval(timer);
+  }, [playing, selectedId]);
+  useEffect(() => {
+    if (frame === LAST_FRAME) setPlaying(false);
+  }, [frame]);
+  useEffect(() => {
+    const shortcut = (event) => {
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        event.shiftKey &&
+        event.code === "KeyL" &&
+        !event.repeat &&
+        !event.target.closest('input,textarea,select,[contenteditable="true"]')
+      ) {
+        event.preventDefault();
+        setMode((current) => (current === "soc" ? "executive" : "soc"));
       }
+    };
+    window.addEventListener("keydown", shortcut);
+    return () => window.removeEventListener("keydown", shortcut);
+  }, []);
+  const fetchTelemetry = async () => {
+    controller.current?.abort();
+    const request = new AbortController();
+    controller.current = request;
+    setLoading(true);
+    try {
+      const res = await api.get("/dashboard/analytics", {
+        signal: request.signal,
+        timeout: 10000,
+      });
+      if (!res.data.success) throw new Error("Unavailable");
+      setData(res.data);
+      setError("");
+      const scans = (res.data.recentScans || []).map(normalizeScan);
+      const fresh = scans.find((i) => !knownIds.current?.has(i.id));
+      if (!demoRef.current && fresh) {
+        setSelectedId(fresh.id);
+        setTab("details");
+      }
+      knownIds.current = new Set(scans.map((i) => i.id));
     } catch (err) {
-      console.warn('Dashboard telemetry fetch failed:', err);
-      setError('Dashboard data is unavailable. Please start the backend service and try again.');
-      setMetrics(null);
-      setCharts(null);
-      setRecentScans([]);
+      if (!request.signal.aborted)
+        setError(
+          "Telemetry connection unavailable. Retry or explore the demo.",
+        );
+    } finally {
+      if (!request.signal.aborted) setLoading(false);
     }
-    setLoading(false);
+  };
+  useEffect(() => {
+    fetchTelemetry();
+    const timer = setInterval(fetchTelemetry, 30000);
+    return () => {
+      clearInterval(timer);
+      controller.current?.abort();
+    };
+  }, []);
+  const incidents = demo
+    ? [...injected, ...demoIncidents]
+    : (data?.recentScans || []).map(normalizeScan);
+  const incident = incidents.find((i) => i.id === selectedId);
+  const trend = demo
+    ? incident
+      ? demoTrend.slice(
+          0,
+          Math.max(2, Math.ceil(((frame + 1) / 81) * demoTrend.length)),
+        )
+      : demoTrend
+    : data?.charts?.detectionTrend || [];
+  const metrics = demo
+    ? {
+        totalNetworkFlows: 24816,
+        normalFlows: 23942,
+        maliciousFlows: 874,
+        highCriticalAlerts: 3,
+      }
+    : data?.metrics;
+  const risk = metrics?.totalNetworkFlows
+    ? Math.round((metrics.maliciousFlows / metrics.totalNetworkFlows) * 100)
+    : null;
+  const select = (i) => {
+    setSelectedId(i.id);
+    setTab("details");
+  };
+  const toggleDemo = () => {
+    const next = !demo;
+    demoRef.current = next;
+    setDemo(next);
+    setSelectedId(next ? demoIncidents[0].id : null);
+    setTab("details");
+    setStatuses({});
+  };
+  const action = (status) => {
+    setStatuses((previous) => ({ ...previous, [incident.id]: status }));
+    setHistory((previous) => ({
+      ...previous,
+      [incident.id]: [
+        ...(previous[incident.id] || []),
+        { action: status, timestamp: new Date().toISOString() },
+      ],
+    }));
+  };
+  const inject = (kind) => {
+    const created = createSimulatedIncident(kind);
+    demoRef.current = true;
+    setDemo(true);
+    setInjected((previous) => [created, ...previous].slice(0, 30));
+    setSelectedId(created.id);
+    setTab("details");
+    setMode("soc");
+  };
+  const seek = (value) => {
+    setPlaying(false);
+    setFrame(Math.max(0, Math.min(LAST_FRAME, value)));
+  };
+  const togglePlayback = () => {
+    if (frame === LAST_FRAME) setFrame(0);
+    setPlaying((value) => !value);
   };
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, []);
-
-  const COLORS = ['#00E5A8', '#FF4D6D', '#F59E0B', '#4F8CFF', '#A855F7', '#EC4899'];
-
-  const filteredScans = recentScans.filter((s) => {
-    const fn = s.filename || s.target || '';
-    const mainAtk = s.mainAttackCategory || s.attackType || '';
-    const matchesSearch =
-      fn.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mainAtk.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (s.id && s.id.toLowerCase().includes(searchTerm.toLowerCase()));
-    const risk = s.overallRisk || s.riskLevel || '';
-    const matchesRisk = riskFilter === 'All' || risk.toLowerCase().includes(riskFilter.toLowerCase());
-    return matchesSearch && matchesRisk;
-  });
-
-  return (
-    <div className="space-y-8 pb-16">
-
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+  const header = (
+    <>
+      <header className="soc-header">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white">SOC Control Center</h1>
-            <span className="px-2.5 py-1 rounded-full bg-[#00E5A8]/10 text-[#00E5A8] border border-[#00E5A8]/30 font-mono text-xs">
-              CICIDS2017 & NLP INTELLIGENCE
-            </span>
+          <div className="soc-eyebrow">
+            SECURITY OPERATIONS / COMMAND CENTER
           </div>
-          <p className="text-xs text-gray-400 mt-1">Real-time CICIDS2017 ML network telemetry, NLP Fake Legal Notice fraud, and SOC analytics.</p>
+          <h1>
+            Cyber-SOC command<span className="soc-title-dot">.</span>
+          </h1>
+          <p>Neural intelligence. Human control. Complete visibility.</p>
         </div>
-
-        <div className="flex items-center gap-3">
+        <div className="soc-header-actions">
           <button
-            onClick={() => {
-              fetchAnalytics();
-              addToast('Telemetry refreshed!', 'info');
-            }}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl glass-card border border-gray-800 text-xs font-mono text-gray-300 hover:text-white transition-colors"
+            className="soc-button compact soc-mode-switch"
+            onClick={() =>
+              setMode((value) => (value === "soc" ? "executive" : "soc"))
+            }
+            aria-pressed={mode === "executive"}
+            aria-keyshortcuts="Meta+Shift+L Control+Shift+L"
+            title="Toggle Executive / Deep SOC · Cmd or Ctrl + Shift + L"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            Refresh Telemetry
+            <Monitor size={14} />
+            {mode === "soc" ? "Deep SOC Mode" : "Executive Mode"}
           </button>
-
+          <span
+            className={`soc-connection ${demo ? "warning" : error ? "offline" : ""}`}
+          >
+            <i className="soc-dot" />
+            {demo
+              ? "DEMO TELEMETRY"
+              : loading
+                ? "CONNECTING"
+                : error
+                  ? "DISCONNECTED"
+                  : "SYNCED · 30s POLLING"}
+          </span>
           <button
-            onClick={() => navigate('/intrusion')}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00E5A8] to-[#4F8CFF] text-[#0B1020] font-bold text-xs shadow-md shadow-[#00E5A8]/20 hover:opacity-90 transition-opacity"
+            className="soc-button compact"
+            onClick={fetchTelemetry}
+            disabled={loading}
+            aria-label="Refresh telemetry"
           >
-            + New Intrusion Scan
+            <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
           </button>
+          <Link className="soc-button compact" to="/intrusion">
+            New scan <ArrowUpRight size={15} />
+          </Link>
         </div>
+      </header>
+      <div className="soc-data-notice">
+        <span>
+          {demo
+            ? "Demo workspace · synthetic events, illustrative node positions, simulated investigations."
+            : error ||
+              "Analytics scan records · node positions are illustrative, not geolocated."}
+        </span>
+        <button onClick={toggleDemo}>
+          {demo ? "Return to telemetry" : "Explore demo"}
+        </button>
       </div>
+    </>
+  );
 
-      {/* Error state */}
-      {error && (
-        <div className="glass-card rounded-3xl p-8 border border-red-500/30 text-center space-y-4 max-w-2xl mx-auto">
-          <AlertTriangle className="w-10 h-10 text-red-400 mx-auto" />
-          <h3 className="text-lg font-bold text-white">Dashboard Unavailable</h3>
-          <p className="text-xs text-gray-300">{error}</p>
-          <button
-            onClick={fetchAnalytics}
-            className="px-5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs font-mono text-white transition-colors inline-flex items-center gap-2"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Retry Connection
-          </button>
-        </div>
-      )}
-
-      {/* Loading state skeleton */}
-      {loading && !error && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="glass-card rounded-2xl p-5 border border-gray-800 animate-pulse h-28" />
-          ))}
-        </div>
-      )}
-
-      {/* Content View when loaded */}
-      {!loading && !error && metrics && (
-        <>
-          {/* Metric Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-
-            <div className="glass-card rounded-2xl p-4 sm:p-5 border border-gray-800 hover:border-[#4F8CFF]/40 transition-all">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-gray-400 font-mono">TOTAL SCANS</span>
-                <div className="p-2 rounded-xl bg-[#4F8CFF]/10 text-[#4F8CFF] border border-[#4F8CFF]/20">
-                  <Activity className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <span className="text-3xl font-extrabold text-white font-mono">{metrics.totalScans}</span>
-              </div>
-              <p className="text-[10px] text-gray-500 mt-2">Executed CSV scans</p>
-            </div>
-
-            <div className="glass-card rounded-2xl p-4 sm:p-5 border border-gray-800 hover:border-[#00E5A8]/40 transition-all">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-gray-400 font-mono">TOTAL FLOWS</span>
-                <div className="p-2 rounded-xl bg-[#00E5A8]/10 text-[#00E5A8] border border-[#00E5A8]/20">
-                  <Cpu className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <span className="text-3xl font-extrabold text-white font-mono">{metrics.totalNetworkFlows}</span>
-              </div>
-              <p className="text-[10px] text-gray-500 mt-2">Analyzed connection records</p>
-            </div>
-
-            <div className="glass-card rounded-2xl p-4 sm:p-5 border border-gray-800 hover:border-emerald-500/40 transition-all">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-gray-400 font-mono">NORMAL FLOWS</span>
-                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  <CheckCircle className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <span className="text-3xl font-extrabold text-emerald-400 font-mono">{metrics.normalFlows}</span>
-              </div>
-              <p className="text-[10px] text-gray-500 mt-2">Clean baseline traffic</p>
-            </div>
-
-            <div className="glass-card rounded-2xl p-4 sm:p-5 border border-gray-800 hover:border-[#FF4D6D]/40 transition-all">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-gray-400 font-mono">MALICIOUS FLOWS</span>
-                <div className="p-2 rounded-xl bg-[#FF4D6D]/10 text-[#FF4D6D] border border-[#FF4D6D]/20">
-                  <AlertTriangle className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <span className="text-3xl font-extrabold text-[#FF4D6D] font-mono">{metrics.maliciousFlows}</span>
-              </div>
-              <p className="text-[10px] text-gray-500 mt-2">Flagged intrusion threats</p>
-            </div>
-
-            <div className="glass-card rounded-2xl p-4 sm:p-5 border border-gray-800 hover:border-[#F59E0B]/40 transition-all">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-gray-400 font-mono">HIGH/CRITICAL ALERTS</span>
-                <div className="p-2 rounded-xl bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20">
-                  <Shield className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-3">
-                <span className="text-3xl font-extrabold text-[#F59E0B] font-mono">{metrics.highCriticalAlerts}</span>
-              </div>
-              <p className="text-[10px] text-gray-500 mt-2">High severity scan events</p>
-            </div>
-
+  const monitoring = (
+    <>
+      <div className="soc-metrics">
+        <div className="soc-card soc-global-risk">
+          <RiskGauge score={risk} label="FLAGGED %" />
+          <div>
+            <span className="soc-eyebrow">GLOBAL RISK</span>
+            <strong>
+              {risk == null
+                ? "Awaiting data"
+                : risk > 20
+                  ? "Elevated"
+                  : "Monitoring"}
+            </strong>
+            <small>Share of flagged flows</small>
           </div>
-
-          {/* Empty state when 0 scans exist */}
-          {metrics.totalScans === 0 && (
-            <div className="glass-card rounded-3xl p-10 border border-gray-800 text-center space-y-4">
-              <ShieldAlert className="w-12 h-12 text-[#00E5A8] mx-auto opacity-80" />
-              <h3 className="text-xl font-bold text-white">No Intrusion Scans Executed Yet</h3>
-              <p className="text-xs text-gray-400 max-w-md mx-auto">
-                Upload network telemetry CSV files on the Intrusion Detection page to start generating live threat telemetry.
-              </p>
-              <button
-                onClick={() => navigate('/intrusion')}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#00E5A8] to-[#4F8CFF] text-[#0B1020] font-bold text-xs shadow-md"
+        </div>
+        {[
+          {
+            name: "ANALYZED FLOWS",
+            value: metrics?.totalNetworkFlows,
+            icon: Activity,
+            color: "cyan",
+          },
+          {
+            name: "FLAGGED FLOWS",
+            value: metrics?.maliciousFlows,
+            icon: ShieldAlert,
+            color: "red",
+          },
+          {
+            name: "HIGH / CRITICAL",
+            value: metrics?.highCriticalAlerts,
+            icon: Zap,
+            color: "amber",
+          },
+        ].map((m) => (
+          <div className="soc-card soc-metric" key={m.name}>
+            <span className="soc-eyebrow">
+              {m.name}
+              <m.icon size={15} className={`soc-${m.color}`} />
+            </span>
+            <strong>{m.value?.toLocaleString() ?? "—"}</strong>
+            <small>
+              {demo ? "Illustrative snapshot" : "Recorded analytics"}
+            </small>
+          </div>
+        ))}
+      </div>
+      <section className="soc-card soc-radar">
+        <div className="soc-card-heading">
+          <h2>
+            <Globe size={16} /> Global threat radar
+          </h2>
+          <span className="soc-eyebrow">SPATIAL SIGNAL VIEW</span>
+        </div>
+        <div className="soc-radar-body">
+          <div className="soc-radar-caption">
+            <span className="soc-eyebrow">NEURAL PERIMETER</span>
+            <h3>
+              Visibility without
+              <br />
+              blind spots.
+            </h3>
+            <p>
+              Select a signal on the globe
+              <br />
+              to trace its investigation.
+            </p>
+            <div className="soc-legend">
+              <span>
+                <i className="soc-dot red" /> Critical signal
+              </span>
+              <span>
+                <i className="soc-dot amber" /> Other signal
+              </span>
+            </div>
+          </div>
+          <div
+            className="soc-globe"
+            aria-label="Interactive 3D signal globe; the same signals are available in the event stream"
+          >
+            <Suspense
+              fallback={<p className="soc-empty">Initializing radar…</p>}
+            >
+              <ThreatGlobe
+                incidents={incidents}
+                selectedId={selectedId}
+                onSelect={select}
+                frame={frame}
+                playing={playing}
+              />
+            </Suspense>
+          </div>
+          <div className="soc-radar-coordinates">
+            ILLUSTRATIVE TOPOLOGY <span>{incidents.length} SIGNALS</span>
+          </div>
+        </div>
+      </section>
+      <section className="soc-card soc-chart">
+        <div className="soc-card-heading">
+          <h2>
+            <Activity size={16} /> Network anomaly analysis
+          </h2>
+          <div className="soc-chart-legend">
+            <span className="soc-cyan">● Baseline / safe</span>
+            <span className="soc-red">● Flagged</span>
+          </div>
+        </div>
+        <div className="soc-chart-body">
+          {trend.length ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={trend}
+                margin={{ top: 10, right: 16, left: -18, bottom: 0 }}
               >
-                Launch First Scan
-              </button>
-            </div>
+                <defs>
+                  <linearGradient
+                    id="socThreatFill"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="0%" stopColor="#FF007F" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#FF007F" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="#ffffff08" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: "#738198", fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                  minTickGap={35}
+                />
+                <YAxis
+                  tick={{ fill: "#738198", fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: "#0F172A",
+                    border: "1px solid #263348",
+                    borderRadius: 8,
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="safe"
+                  stroke="#00F0FF"
+                  fill="transparent"
+                  strokeWidth={1.8}
+                  isAnimationActive={false}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="threats"
+                  stroke="#FF007F"
+                  fill="url(#socThreatFill)"
+                  strokeWidth={1.8}
+                  isAnimationActive={false}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="soc-empty">
+              {loading
+                ? "Connecting to telemetry…"
+                : "No trend data. Run a scan or explore the demo."}
+            </p>
           )}
-
-          {/* Charts Section */}
-          {metrics.totalScans > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-              {/* Detection Trend Timeline */}
-              <div className="lg:col-span-8 glass-card rounded-2xl p-6 border border-gray-800 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-base font-bold text-white">Detection Trend Timeline</h3>
-                    <p className="text-xs text-gray-400">Threat vs Safe telemetry records grouped by scan date</p>
-                  </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-gray-800 text-gray-300">HISTORICAL DATES</span>
-                </div>
-
-                <div className="h-64 w-full pt-2">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={charts?.detectionTrend || []}>
-                      <defs>
-                        <linearGradient id="colorThreats" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#FF4D6D" stopOpacity={0.4} />
-                          <stop offset="95%" stopColor="#FF4D6D" stopOpacity={0} />
-                        </linearGradient>
-                        <linearGradient id="colorSafe" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#00E5A8" stopOpacity={0.4} />
-                          <stop offset="95%" stopColor="#00E5A8" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <XAxis dataKey="date" stroke="#6B7280" fontSize={11} />
-                      <YAxis stroke="#6B7280" fontSize={11} />
-                      <Tooltip contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '12px' }} />
-                      <Area type="monotone" dataKey="threats" stroke="#FF4D6D" fillOpacity={1} fill="url(#colorThreats)" name="Malicious Flows" />
-                      <Area type="monotone" dataKey="safe" stroke="#00E5A8" fillOpacity={1} fill="url(#colorSafe)" name="Normal Flows" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Attack Category Distribution Pie Chart */}
-              <div className="lg:col-span-4 glass-card rounded-2xl p-6 border border-gray-800 space-y-4">
-                <div>
-                  <h3 className="text-base font-bold text-white">Attack Distribution</h3>
-                  <p className="text-xs text-gray-400">Categorized by evaluated exploit class</p>
-                </div>
-
-                <div className="h-64 w-full flex items-center justify-center">
-                  {charts?.attackDistribution && charts.attackDistribution.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={charts.attackDistribution}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={55}
-                          outerRadius={75}
-                          paddingAngle={4}
-                          dataKey="value"
-                        >
-                          {charts.attackDistribution.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '12px' }} />
-                        <Legend formatter={(val) => <span className="text-xs text-gray-300 font-medium">{val}</span>} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <p className="text-xs text-gray-500">No attack distribution data yet.</p>
-                  )}
-                </div>
-              </div>
-
-            </div>
-          )}
-
-          {/* Risk Level Distribution & Recent Security Telemetry Table */}
-          {metrics.totalScans > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-              <div className="lg:col-span-4 glass-card rounded-2xl p-6 border border-gray-800 space-y-4">
-                <div>
-                  <h3 className="text-base font-bold text-white">Risk Severity Breakdown</h3>
-                  <p className="text-xs text-gray-400">Evaluated scan risk ratings</p>
-                </div>
-
-                <div className="h-64 w-full pt-2">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={charts?.riskDistribution || []}>
-                      <XAxis dataKey="risk" stroke="#6B7280" fontSize={11} />
-                      <YAxis stroke="#6B7280" fontSize={11} />
-                      <Tooltip contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '12px' }} />
-                      <Bar dataKey="count" fill="#4F8CFF" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Recent Activity Table */}
-              <div className="lg:col-span-8 glass-card rounded-2xl p-6 border border-gray-800 space-y-4">
-
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-base font-bold text-white">Recent Security Scans</h3>
-                    <p className="text-xs text-gray-400">Latest network intrusion analysis history</p>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <Search className="w-3.5 h-3.5 text-gray-500 absolute left-3 top-2.5" />
-                      <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Search filename..."
-                        className="pl-8 pr-3 py-1.5 rounded-xl bg-gray-900 border border-gray-800 text-xs text-white focus:outline-none focus:border-[#00E5A8]"
-                      />
-                    </div>
-
-                    <select
-                      value={riskFilter}
-                      onChange={(e) => setRiskFilter(e.target.value)}
-                      className="px-3 py-1.5 rounded-xl bg-gray-900 border border-gray-800 text-xs text-white focus:outline-none focus:border-[#00E5A8]"
-                    >
-                      <option value="All">All Severities</option>
-                      <option value="Critical">Critical</option>
-                      <option value="High">High</option>
-                      <option value="Medium">Medium</option>
-                      <option value="Low">Low / Safe</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="border-b border-gray-800 text-gray-400 font-mono text-[11px]">
-                      <tr>
-                        <th className="pb-3 font-semibold">Filename / Input</th>
-                        <th className="pb-3 font-semibold">Records</th>
-                        <th className="pb-3 font-semibold">Main Attack Category</th>
-                        <th className="pb-3 font-semibold">Overall Risk</th>
-                        <th className="pb-3 font-semibold">Timestamp</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-800/60 font-medium">
-                      {filteredScans.length > 0 ? (
-                        filteredScans.map((s, idx) => (
-                          <tr key={idx} className="hover:bg-gray-800/40 transition-colors">
-                            <td className="py-3">
-                              <p className="font-semibold text-gray-200">{s.filename || s.target || 'CSV Payload'}</p>
-                              <p className="text-[10px] text-gray-500 font-mono">ID: {s.id}</p>
-                            </td>
-                            <td className="py-3 font-mono text-gray-300">
-                              {s.totalRecords || 1}
-                            </td>
-                            <td className="py-3">
-                              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-gray-800 text-gray-300 border border-gray-700">
-                                {s.mainAttackCategory || s.attackType || 'Normal'}
-                              </span>
-                            </td>
-                            <td className="py-3">
-                              <span
-                                className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${(s.overallRisk || s.riskLevel || '').includes('Critical') || (s.overallRisk || s.riskLevel || '').includes('High')
-                                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                                    : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                  }`}
-                              >
-                                {s.overallRisk || s.riskLevel || 'Low'}
-                              </span>
-                            </td>
-                            <td className="py-3 font-mono text-gray-500 text-[10px]">
-                              {new Date(s.timestamp).toLocaleTimeString()}
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="5" className="py-6 text-center text-gray-500">
-                            No matching intrusion scan records found.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-              </div>
-
-            </div>
-          )}
+        </div>
+      </section>
+      <LiveThreatStream
+        incidents={incidents}
+        selectedId={selectedId}
+        onSelect={select}
+        statuses={statuses}
+      />
+      <TimeTravelDebugger
+        frame={frame}
+        playing={playing}
+        onSeek={seek}
+        onToggle={togglePlayback}
+        incident={incident}
+      />
+      {mode === "soc" && (
+        <>
+          <AttackSimulator onInject={inject} />
+          <PacketTerminal incident={incident} frame={frame} />
+          <MultiModalScanner />
         </>
       )}
+      {mode === "executive" && (
+        <section className="soc-card soc-executive-summary">
+          <h2>Executive risk briefing</h2>
+          <p>
+            {incidents.length} visible records ·{" "}
+            {
+              incidents.filter(
+                (i) => i.severity === "Critical" || i.severity === "High",
+              ).length
+            }{" "}
+            high-priority records · {Object.keys(statuses).length} simulated
+            responses.
+          </p>
+          <p className="soc-muted">
+            {demo ? "Synthetic presentation workspace." : "Analytics snapshot."}{" "}
+            Select a record for its explanation and response options. Switch to
+            Deep SOC for the simulation lab, signal scanner, and event trace.
+          </p>
+        </section>
+      )}
+    </>
+  );
 
-    </div>
+  const inspector = (
+    <>
+      <div className="soc-inspector-heading">
+        <div>
+          <span className="soc-eyebrow">INTELLIGENCE WORKSPACE</span>
+          <h2>
+            <Cpu size={18} /> AI investigation
+          </h2>
+        </div>
+        <span className="soc-agent-chip">AGENT 01</span>
+      </div>
+      <div className="soc-tabs" role="tablist" aria-label="Investigation tabs">
+        {tabs.map((t, index) => (
+          <button
+            key={t.id}
+            id={`tab-${t.id}`}
+            role="tab"
+            aria-selected={tab === t.id}
+            aria-controls={`panel-${t.id}`}
+            tabIndex={tab === t.id ? 0 : -1}
+            onClick={() => setTab(t.id)}
+            onKeyDown={(e) => {
+              if (e.ctrlKey || e.metaKey || e.altKey) return;
+              if (["ArrowRight", "ArrowLeft", "Home", "End"].includes(e.key)) {
+                e.preventDefault();
+                const next =
+                  e.key === "Home"
+                    ? 0
+                    : e.key === "End"
+                      ? tabs.length - 1
+                      : (index +
+                          (e.key === "ArrowRight" ? 1 : tabs.length - 1)) %
+                        tabs.length;
+                setTab(tabs[next].id);
+                document.getElementById(`tab-${tabs[next].id}`)?.focus();
+              }
+            }}
+          >
+            <t.icon size={15} />
+            <span>{t.label}</span>
+            {tab === t.id && (
+              <motion.div
+                layoutId="soc-tab-indicator"
+                className="soc-tab-indicator"
+              />
+            )}
+          </button>
+        ))}
+      </div>
+      <div className="soc-selected">
+        <div>
+          <span className="soc-eyebrow">ACTIVE INCIDENT</span>
+          <strong>{incident ? incident.id : "No incident selected"}</strong>
+        </div>
+        {incident && (
+          <button
+            onClick={() => setSelectedId(null)}
+            aria-label="Clear selected incident"
+          >
+            <X size={16} />
+          </button>
+        )}
+      </div>
+      <div className="soc-panel-scroll">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`${tab}-${incident?.id || "empty"}`}
+            role="tabpanel"
+            id={`panel-${tab}`}
+            aria-labelledby={`tab-${tab}`}
+            tabIndex={0}
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.18 }}
+          >
+            {tab === "stats" ? (
+              <ModelAnalyticsTab />
+            ) : !incident ? (
+              <div className="soc-inspector-empty">
+                <ShieldAlert size={38} />
+                <h3>Follow the signal.</h3>
+                <p>
+                  Select an event from the stream or radar to open its
+                  investigation here.
+                </p>
+              </div>
+            ) : tab === "details" ? (
+              <>
+                {mode === "soc" && (
+                  <AgentWorkflowTab
+                    incident={incident}
+                    frame={frame}
+                    playing={playing}
+                    onInspect={() => setTab("xai")}
+                  />
+                )}
+                <ThreatInspectorTab
+                  incident={incident}
+                  status={statuses[incident.id]}
+                  onAction={action}
+                  showActions={false}
+                />
+              </>
+            ) : tab === "xai" ? (
+              <XAIInspector incident={incident} />
+            ) : (
+              <>
+                <div className="soc-note">
+                  <span className="soc-eyebrow">TARGET / {incident.id}</span>
+                  <h3>{incident.title}</h3>
+                  <code>{incident.source}</code>
+                </div>
+                <ActionSuite
+                  incident={incident}
+                  status={statuses[incident.id]}
+                  onAction={action}
+                  history={history[incident.id] || []}
+                />
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <div className="soc-panel-footer">
+        <i className="soc-dot" /> ANALYST CONTROL{" "}
+        <span>Actions require review</span>
+      </div>
+    </>
+  );
+  return (
+    <DashboardLayout
+      header={header}
+      monitoring={monitoring}
+      inspector={inspector}
+      mode={mode}
+    />
   );
 };

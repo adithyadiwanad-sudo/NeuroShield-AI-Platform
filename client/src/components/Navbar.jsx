@@ -40,7 +40,7 @@ export const Navbar = ({ onOpenAuth }) => {
 
   return (
     <nav className="sticky top-0 z-40 glass-nav transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className={`${location.pathname === '/dashboard' ? 'max-w-none' : 'max-w-7xl'} mx-auto px-4 sm:px-6 lg:px-8`}>
         <div className="flex items-center justify-between h-16">
 
           {/* Logo Brand */}
