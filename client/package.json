@@ -4,10 +4,11 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "test": "node src/components/dashboard/dashboard.test.js",
+    "test": "node src/components/dashboard/dashboard.test.js && node src/enterprise/domain.test.ts",
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@react-three/fiber": "^8.18.0",
@@ -28,12 +29,14 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^22.20.5",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.18",
     "postcss": "^8.4.35",
     "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
     "vite": "^5.1.4"
   }
 }

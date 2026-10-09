@@ -11,6 +11,7 @@ export async function incidentHash(incident) {
     explanation: incident.explanation,
     features: incident.features || [],
     demo: incident.demo,
+    provenance: incident.provenance || (incident.demo ? "simulation" : "model"),
   });
   const digest = await crypto.subtle.digest(
     "SHA-256",
@@ -84,7 +85,9 @@ export async function createIncidentReport(incident, status, history = []) {
   paragraph(
     incident.demo
       ? "DATA PROVENANCE: SYNTHETIC PRESENTATION SCENARIO. Confidence and attribution values are illustrative, not measured outputs."
-      : "DATA PROVENANCE: Recorded analytics scan. Workflow execution and response controls are simulated.",
+      : incident.provenance === "heuristic"
+        ? "DATA PROVENANCE: Local rule-based inspection. Scores are heuristic points, not calibrated ML probabilities. Response controls are simulated."
+        : "DATA PROVENANCE: Recorded analytics scan. Workflow execution and response controls are simulated.",
   );
   section("II. INCIDENT METADATA");
   for (const line of [
@@ -107,12 +110,17 @@ export async function createIncidentReport(incident, status, history = []) {
   // the closing paragraph at the top of an otherwise empty column.
   nextColumn();
   section("IV. FEATURE ATTRIBUTION MATRIX");
-  paragraph("Factor / illustrative contribution (%)", true);
+  paragraph(
+    incident.provenance === "heuristic"
+      ? "Factor / observed rule contribution (points)"
+      : "Factor / illustrative contribution (points)",
+    true,
+  );
   if (incident.features?.length)
     for (const feature of incident.features) {
       space(14);
       doc.setDrawColor(180);
-      paragraph(`${feature.name}: +${feature.impact}%`);
+      paragraph(`${feature.name}: +${feature.impact} points`);
       doc.line(x(), y - 2, x() + 82, y - 2);
       y += 2;
     }
@@ -121,12 +129,14 @@ export async function createIncidentReport(incident, status, history = []) {
       "Measured SHAP/LIME values are not supplied by the analytics endpoint.",
     );
   paragraph(
-    "Weights are local example contributions. They are not causal evidence and are not guaranteed to sum to 100%.",
+    incident.provenance === "heuristic"
+      ? "Weights are configured rule contributions. The total risk index is capped at 100. These are not measured SHAP/LIME values."
+      : "Weights are local example contributions. They are not causal evidence and are not guaranteed to sum to 100.",
   );
   section("V. MITIGATION HISTORY");
   if (history.length)
     for (const entry of history)
-      paragraph(`${entry.timestamp}: ${entry.action} (simulation).`);
+      paragraph(`${entry.timestamp}: ${entry.action}.`);
   else paragraph("No mitigation actions recorded in this session.");
   section("VI. LIMITATIONS AND REPRODUCIBILITY");
   paragraph(

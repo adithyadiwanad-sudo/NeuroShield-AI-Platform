@@ -24,6 +24,13 @@ import {
   Tooltip,
 } from "recharts";
 import api from "../services/api";
+import { useSoc } from "../enterprise/SocContext";
+import {
+  CommandMetrics,
+  ThreatHeatmap,
+  GeographicBars,
+} from "../enterprise/Visuals";
+import { Attribution } from "../enterprise/IncidentInspector";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import LiveThreatStream from "../components/dashboard/LiveThreatStream";
 import AgentWorkflowTab from "../components/dashboard/right_panel/AgentWorkflowTab";
@@ -54,21 +61,35 @@ const tabs = [
 ];
 
 export const Dashboard = () => {
+  const soc = useSoc();
   const [data, setData] = useState(null);
-  const [demo, setDemo] = useState(false);
+  const [demo, setDemo] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedId, setSelectedId] = useState(null);
+  const [liveSelectedId, setLiveSelectedId] = useState(null);
+  const selectedId = demo ? soc.selectedId : liveSelectedId;
+  const setSelectedId = demo ? soc.select : setLiveSelectedId;
   const [tab, setTab] = useState("details");
   const [frame, setFrame] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [mode, setMode] = useState("soc");
-  const [injected, setInjected] = useState([]);
-  const [history, setHistory] = useState({});
-  const [statuses, setStatuses] = useState({});
+  const [liveHistory, setHistory] = useState({});
+  const [liveStatuses, setStatuses] = useState({});
+  const history = demo
+    ? Object.fromEntries(soc.incidents.map((i) => [i.id, i.history]))
+    : liveHistory;
+  const statuses = demo
+    ? Object.fromEntries(
+        soc.incidents.map((i) => [
+          i.id,
+          i.history.findLast((h) => h.action.includes("simulated"))?.action ||
+            i.status,
+        ]),
+      )
+    : liveStatuses;
   const controller = useRef();
   const knownIds = useRef(null);
-  const demoRef = useRef(false);
+  const demoRef = useRef(true);
   useEffect(() => {
     setFrame(0);
     setPlaying(Boolean(selectedId));
@@ -116,7 +137,7 @@ export const Dashboard = () => {
       const scans = (res.data.recentScans || []).map(normalizeScan);
       const fresh = scans.find((i) => !knownIds.current?.has(i.id));
       if (!demoRef.current && fresh) {
-        setSelectedId(fresh.id);
+        setLiveSelectedId(fresh.id);
         setTab("details");
       }
       knownIds.current = new Set(scans.map((i) => i.id));
@@ -138,7 +159,7 @@ export const Dashboard = () => {
     };
   }, []);
   const incidents = demo
-    ? [...injected, ...demoIncidents]
+    ? soc.incidents
     : (data?.recentScans || []).map(normalizeScan);
   const incident = incidents.find((i) => i.id === selectedId);
   const trend = demo
@@ -168,11 +189,16 @@ export const Dashboard = () => {
     const next = !demo;
     demoRef.current = next;
     setDemo(next);
-    setSelectedId(next ? demoIncidents[0].id : null);
+    if (next && !soc.selectedId) soc.select(soc.incidents[0]?.id || null);
+    if (!next) setLiveSelectedId(null);
     setTab("details");
     setStatuses({});
   };
   const action = (status) => {
+    if (demo) {
+      soc.recordAction(incident.id, status);
+      return;
+    }
     setStatuses((previous) => ({ ...previous, [incident.id]: status }));
     setHistory((previous) => ({
       ...previous,
@@ -183,11 +209,9 @@ export const Dashboard = () => {
     }));
   };
   const inject = (kind) => {
-    const created = createSimulatedIncident(kind);
+    soc.inject(kind);
     demoRef.current = true;
     setDemo(true);
-    setInjected((previous) => [created, ...previous].slice(0, 30));
-    setSelectedId(created.id);
     setTab("details");
     setMode("soc");
   };
@@ -253,7 +277,7 @@ export const Dashboard = () => {
       <div className="soc-data-notice">
         <span>
           {demo
-            ? "Demo workspace · synthetic events, illustrative node positions, simulated investigations."
+            ? "Local workspace · synthetic scenarios and labeled heuristic checks. Topology and response execution are illustrative."
             : error ||
               "Analytics scan records · node positions are illustrative, not geolocated."}
         </span>
@@ -266,53 +290,57 @@ export const Dashboard = () => {
 
   const monitoring = (
     <>
-      <div className="soc-metrics">
-        <div className="soc-card soc-global-risk">
-          <RiskGauge score={risk} label="FLAGGED %" />
-          <div>
-            <span className="soc-eyebrow">GLOBAL RISK</span>
-            <strong>
-              {risk == null
-                ? "Awaiting data"
-                : risk > 20
-                  ? "Elevated"
-                  : "Monitoring"}
-            </strong>
-            <small>Share of flagged flows</small>
+      {demo ? (
+        <CommandMetrics incidents={soc.incidents} />
+      ) : (
+        <div className="soc-metrics">
+          <div className="soc-card soc-global-risk">
+            <RiskGauge score={risk} label="FLAGGED %" />
+            <div>
+              <span className="soc-eyebrow">GLOBAL RISK</span>
+              <strong>
+                {risk == null
+                  ? "Awaiting data"
+                  : risk > 20
+                    ? "Elevated"
+                    : "Monitoring"}
+              </strong>
+              <small>Share of flagged flows</small>
+            </div>
           </div>
+          {[
+            {
+              name: "ANALYZED FLOWS",
+              value: metrics?.totalNetworkFlows,
+              icon: Activity,
+              color: "cyan",
+            },
+            {
+              name: "FLAGGED FLOWS",
+              value: metrics?.maliciousFlows,
+              icon: ShieldAlert,
+              color: "red",
+            },
+            {
+              name: "HIGH / CRITICAL",
+              value: metrics?.highCriticalAlerts,
+              icon: Zap,
+              color: "amber",
+            },
+          ].map((m) => (
+            <div className="soc-card soc-metric" key={m.name}>
+              <span className="soc-eyebrow">
+                {m.name}
+                <m.icon size={15} className={`soc-${m.color}`} />
+              </span>
+              <strong>{m.value?.toLocaleString() ?? "—"}</strong>
+              <small>
+                {demo ? "Illustrative snapshot" : "Recorded analytics"}
+              </small>
+            </div>
+          ))}
         </div>
-        {[
-          {
-            name: "ANALYZED FLOWS",
-            value: metrics?.totalNetworkFlows,
-            icon: Activity,
-            color: "cyan",
-          },
-          {
-            name: "FLAGGED FLOWS",
-            value: metrics?.maliciousFlows,
-            icon: ShieldAlert,
-            color: "red",
-          },
-          {
-            name: "HIGH / CRITICAL",
-            value: metrics?.highCriticalAlerts,
-            icon: Zap,
-            color: "amber",
-          },
-        ].map((m) => (
-          <div className="soc-card soc-metric" key={m.name}>
-            <span className="soc-eyebrow">
-              {m.name}
-              <m.icon size={15} className={`soc-${m.color}`} />
-            </span>
-            <strong>{m.value?.toLocaleString() ?? "—"}</strong>
-            <small>
-              {demo ? "Illustrative snapshot" : "Recorded analytics"}
-            </small>
-          </div>
-        ))}
-      </div>
+      )}
       <section className="soc-card soc-radar">
         <div className="soc-card-heading">
           <h2>
@@ -439,6 +467,29 @@ export const Dashboard = () => {
           )}
         </div>
       </section>
+      {demo && (
+        <div className="es-secondary-charts">
+          <ThreatHeatmap
+            incidents={soc.incidents}
+            onSelect={(id) => select({ id })}
+          />
+          <GeographicBars incidents={soc.incidents} />
+        </div>
+      )}
+      {demo && (
+        <div className="es-between">
+          <span className="es-eyebrow">
+            SHARED INCIDENT FEED / {soc.incidents.length} RECORDS
+          </span>
+          <button
+            className="es-button"
+            aria-pressed={soc.streaming}
+            onClick={() => soc.setStreaming(!soc.streaming)}
+          >
+            {soc.streaming ? "Pause demo stream" : "Start demo stream"}
+          </button>
+        </div>
+      )}
       <LiveThreatStream
         incidents={incidents}
         selectedId={selectedId}
@@ -587,7 +638,11 @@ export const Dashboard = () => {
                 />
               </>
             ) : tab === "xai" ? (
-              <XAIInspector incident={incident} />
+              incident.provenance ? (
+                <Attribution incident={incident} />
+              ) : (
+                <XAIInspector incident={incident} />
+              )
             ) : (
               <>
                 <div className="soc-note">

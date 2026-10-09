@@ -42,6 +42,7 @@ export function RiskGauge({ score, label = "RISK SCORE" }) {
     </div>
   );
 }
+/** @param {{incident: object, status?: string, onAction: (action: string) => void, history?: {action: string, timestamp: string}[]}} props */
 export function ActionSuite({ incident, status, onAction, history = [] }) {
   const [exporting, setExporting] = useState(false);
   const [exportMessage, setExportMessage] = useState("");
