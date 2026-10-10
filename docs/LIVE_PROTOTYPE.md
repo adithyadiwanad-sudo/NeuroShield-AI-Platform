@@ -156,6 +156,10 @@ Full presentation instructions and every page control: [Judge demo guide](JUDGE_
 
 ## Deployment verification and runtime
 
+For the root vercel.json commands, keep Vercel's **Root Directory at the repository root (`.`)**, not `client`: each command already uses `--prefix client`. Installation uses `npm --prefix client install`, the build uses `npm --prefix client run build`, and only `client/dist` is published. The deployed `/` redirects to `/dashboard` so visitors enter the SOC workspace instead of the legacy landing page.
+
+`client/.env.production` supplies the public Render API (`https://neuroshield-live-api.onrender.com`) and WebSocket (`wss://neuroshield-live-api.onrender.com/ws/live-feed`) defaults. Vercel build environment variables override these values; remove stale `VITE_API_URL` / `VITE_WS_URL` overrides if using the `NEXT_PUBLIC_*` settings. Vite exposes both prefixes and replaces the two `process.env.NEXT_PUBLIC_*` references at build time. Redeploy after changing environment variables. Development still defaults to localhost.
+
 The frontend is React 18 + TypeScript/JSX, Tailwind 4, Framer Motion, Recharts and Three.js, built with Vite 8. Use **Node 24.x** in Vercel Project Settings. The root and client package engine declarations and client/.nvmrc record this requirement. The FastAPI backend uses Python 3.13 and the pinned backend requirements.
 
 The repository-root Vercel configuration builds client/dist and rewrites application routes including /scan, /incidents, /intrusion and /scam-lab. NEXT_PUBLIC_API_URL and NEXT_PUBLIC_WS_URL are public build-time settings, not secret storage. Set them before the production build. The frontend adds anti-framing, content-type and referrer headers. Route modules and the PDF library load on demand; the Three.js globe remains a large lazy-loaded asset.

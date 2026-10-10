@@ -9,7 +9,14 @@
       "destination": "/index.html"
     }
   ],
-  "installCommand": "npm --prefix client ci",
+  "installCommand": "npm --prefix client install",
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/dashboard",
+      "permanent": false
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
