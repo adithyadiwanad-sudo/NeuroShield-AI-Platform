@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useReducedMotion } from "framer-motion";
 import {
   ScanLine,
@@ -61,6 +62,7 @@ function delay(ms: number, signal: AbortSignal) {
 }
 
 export default function ScamLabPage() {
+  const [params] = useSearchParams();
   const soc = useSoc();
   const reduced = useReducedMotion();
   const request = useRef<AbortController | null>(null);
@@ -68,7 +70,9 @@ export default function ScamLabPage() {
   const [busy, setBusy] = useState(false),
     [handsFree, setHandsFree] = useState(false),
     [progress, setProgress] = useState("Ready for live API analysis");
-  const [mode, setMode] = useState("url"),
+  const [mode, setMode] = useState(
+      params.get("mode") === "media" ? "media" : "url",
+    ),
     [input, setInput] = useState(presentationScenarios[0].input),
     [result, setResult] = useState<Analysis | null>(null),
     [error, setError] = useState("");
@@ -374,7 +378,12 @@ export default function ScamLabPage() {
                   </button>
                 )}
                 <label className="es-demo-check">
-                  <input type="checkbox" checked={sampleDemo} disabled={busy || handsFree || mode === "audio"} onChange={e => setSampleDemo(e.target.checked)} />
+                  <input
+                    type="checkbox"
+                    checked={sampleDemo}
+                    disabled={busy || handsFree || mode === "audio"}
+                    onChange={(e) => setSampleDemo(e.target.checked)}
+                  />
                   Label input as a synthetic demonstration
                 </label>
                 {error && (

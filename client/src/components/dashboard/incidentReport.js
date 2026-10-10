@@ -1,5 +1,3 @@
-import { jsPDF } from "jspdf";
-
 export async function incidentHash(incident) {
   const canonical = JSON.stringify({
     id: incident.id,
@@ -24,6 +22,7 @@ export async function incidentHash(incident) {
 
 /** Two-column academic report inspired by IEEE conference typography. */
 export async function createIncidentReport(incident, status, history = []) {
+  const { jsPDF } = await import("jspdf");
   const hash = await incidentHash(incident);
   const doc = new jsPDF();
   doc.setProperties({

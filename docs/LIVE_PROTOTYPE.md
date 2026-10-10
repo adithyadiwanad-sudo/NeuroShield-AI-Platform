@@ -153,3 +153,11 @@ Reference docs: [FastAPI WebSockets](https://fastapi.tiangolo.com/advanced/webso
 [Vite on Vercel](https://vercel.com/docs/frameworks/frontend/vite).
 
 Full presentation instructions and every page control: [Judge demo guide](JUDGE_DEMO_GUIDE.md).
+
+## Deployment verification and runtime
+
+The frontend is React 18 + TypeScript/JSX, Tailwind 4, Framer Motion, Recharts and Three.js, built with Vite 8. Use **Node 24.x** in Vercel Project Settings. The root and client package engine declarations and client/.nvmrc record this requirement. The FastAPI backend uses Python 3.13 and the pinned backend requirements.
+
+The repository-root Vercel configuration builds client/dist and rewrites application routes including /scan, /incidents, /intrusion and /scam-lab. NEXT_PUBLIC_API_URL and NEXT_PUBLIC_WS_URL are public build-time settings, not secret storage. Set them before the production build. The frontend adds anti-framing, content-type and referrer headers. Route modules and the PDF library load on demand; the Three.js globe remains a large lazy-loaded asset.
+
+The patched frontend dependency set passed npm audit with zero advisories at the time of this change. CI checks high/critical dependency advisories, type checking, tests and the production build. This is a deployable academic prototype, not a validated production IDS: public synthetic feed, in-memory rate limiting, session-only findings, heuristic network/voice scoring and simulated enforcement remain deliberate boundaries. Legacy account services require separate Express/database hosting.

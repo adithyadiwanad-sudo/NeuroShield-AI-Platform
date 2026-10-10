@@ -40,7 +40,13 @@ export default function SocShell({
     [appearance, setAppearance] = useState(false),
     [theme, setTheme] = useState("ember"),
     [opacity, setOpacity] = useState(76);
-  const current = navigation.find((link) => link.path === location.pathname);
+  const current = [
+    ...navigation,
+    { path: "/scan", name: "New scan" },
+    { path: "/intrusion", name: "Network intrusion detection" },
+    { path: "/history", name: "Detection history" },
+    { path: "/model-performance", name: "Model evaluation" },
+  ].find((link) => link.path === location.pathname);
   useEffect(() => {
     window.scrollTo(0, 0);
     setAppearance(false);
@@ -129,6 +135,9 @@ export default function SocShell({
           </nav>
           <div className="es-nav-label">ANALYSIS & RESEARCH</div>
           <nav className="es-secondary-nav">
+            <NavLink to="/scan" onClick={() => setMobile(false)}>
+              New scan <ArrowUpRight size={13} />
+            </NavLink>
             <NavLink to="/intrusion" onClick={() => setMobile(false)}>
               Network intrusion detection <ArrowUpRight size={13} />
             </NavLink>

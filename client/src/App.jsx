@@ -1,48 +1,76 @@
-import React, { useState } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
-import { LandingPage } from "./pages/LandingPage";
-import { Dashboard } from "./pages/Dashboard";
-import { NetworkIntrusion } from "./pages/NetworkIntrusion";
-import { DetectionHistory } from "./pages/DetectionHistory";
-import { ModelPerformance } from "./pages/ModelPerformance";
-import { Profile } from "./pages/Profile";
 import { Auth } from "./pages/Auth";
 import { SocProvider } from "./enterprise/SocContext";
 import SocShell from "./enterprise/SocShell";
-import ScamLabPage from "./enterprise/ScamLabPage";
-import IncidentsPage from "./enterprise/IncidentsPage";
-import XaiPlaybooksPage from "./enterprise/XaiPlaybooksPage";
-import SimulatorPage from "./enterprise/SimulatorPage";
-import IntegrationsPage from "./enterprise/IntegrationsPage";
+const LandingPage = lazy(() =>
+  import("./pages/LandingPage").then((m) => ({ default: m.LandingPage })),
+);
+const Dashboard = lazy(() =>
+  import("./pages/Dashboard").then((m) => ({ default: m.Dashboard })),
+);
+const NetworkIntrusion = lazy(() =>
+  import("./pages/NetworkIntrusion").then((m) => ({
+    default: m.NetworkIntrusion,
+  })),
+);
+const DetectionHistory = lazy(() =>
+  import("./pages/DetectionHistory").then((m) => ({
+    default: m.DetectionHistory,
+  })),
+);
+const ModelPerformance = lazy(() =>
+  import("./pages/ModelPerformance").then((m) => ({
+    default: m.ModelPerformance,
+  })),
+);
+const Profile = lazy(() =>
+  import("./pages/Profile").then((m) => ({ default: m.Profile })),
+);
+const ScamLabPage = lazy(() => import("./enterprise/ScamLabPage"));
+const IncidentsPage = lazy(() => import("./enterprise/IncidentsPage"));
+const XaiPlaybooksPage = lazy(() => import("./enterprise/XaiPlaybooksPage"));
+const SimulatorPage = lazy(() => import("./enterprise/SimulatorPage"));
+const IntegrationsPage = lazy(() => import("./enterprise/IntegrationsPage"));
+const ScanLauncherPage = lazy(() => import("./enterprise/ScanLauncherPage"));
 import "./components/layout/dashboard.css";
 export const App = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const landing = useLocation().pathname === "/";
   const openAuth = () => setAuthModalOpen(true);
   const routes = (
-    <Routes>
-      <Route path="/" element={<LandingPage onOpenAuth={openAuth} />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route
-        path="/scam-detector"
-        element={<Navigate to="/scam-lab" replace />}
-      />
-      <Route path="/scam-lab" element={<ScamLabPage />} />
-      <Route path="/incidents" element={<IncidentsPage />} />
-      <Route path="/xai-playbooks" element={<XaiPlaybooksPage />} />
-      <Route path="/simulator" element={<SimulatorPage />} />
-      <Route path="/integrations" element={<IntegrationsPage />} />
-      <Route
-        path="/intrusion"
-        element={<NetworkIntrusion onOpenAuth={openAuth} />}
-      />
-      <Route path="/history" element={<DetectionHistory />} />
-      <Route path="/model-performance" element={<ModelPerformance />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
-    </Routes>
+    <Suspense
+      fallback={
+        <div className="es-panel es-empty" role="status">
+          Loading workspace…
+        </div>
+      }
+    >
+      <Routes>
+        <Route path="/" element={<LandingPage onOpenAuth={openAuth} />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/scan" element={<ScanLauncherPage />} />
+        <Route
+          path="/scam-detector"
+          element={<Navigate to="/scam-lab" replace />}
+        />
+        <Route path="/scam-lab" element={<ScamLabPage />} />
+        <Route path="/incidents" element={<IncidentsPage />} />
+        <Route path="/xai-playbooks" element={<XaiPlaybooksPage />} />
+        <Route path="/simulator" element={<SimulatorPage />} />
+        <Route path="/integrations" element={<IntegrationsPage />} />
+        <Route
+          path="/intrusion"
+          element={<NetworkIntrusion onOpenAuth={openAuth} />}
+        />
+        <Route path="/history" element={<DetectionHistory />} />
+        <Route path="/model-performance" element={<ModelPerformance />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </Suspense>
   );
   return (
     <SocProvider>

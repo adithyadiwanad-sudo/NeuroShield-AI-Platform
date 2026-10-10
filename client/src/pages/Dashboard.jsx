@@ -266,13 +266,29 @@ export const Dashboard = () => {
           </span>
           <button
             className="soc-button compact"
-            onClick={() => demo ? soc.setStreaming(!soc.streaming) : fetchTelemetry()}
+            onClick={() =>
+              demo ? soc.setStreaming(!soc.streaming) : fetchTelemetry()
+            }
             disabled={!demo && loading}
-            aria-label={demo ? (soc.streaming ? "Pause live feed" : "Resume live feed") : "Refresh telemetry"}
+            aria-label={
+              demo
+                ? soc.streaming
+                  ? "Pause live feed"
+                  : "Resume live feed"
+                : "Refresh telemetry"
+            }
           >
-            {demo ? (soc.streaming ? "Pause feed" : "Resume feed") : <RefreshCw size={15} className={loading ? "animate-spin" : ""} />}
+            {demo ? (
+              soc.streaming ? (
+                "Pause feed"
+              ) : (
+                "Resume feed"
+              )
+            ) : (
+              <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+            )}
           </button>
-          <Link className="soc-button compact" to="/intrusion">
+          <Link className="soc-button compact" to="/scan">
             New scan <ArrowUpRight size={15} />
           </Link>
         </div>

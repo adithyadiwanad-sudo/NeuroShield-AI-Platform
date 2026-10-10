@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { autoTable } from 'jspdf-autotable';
 
 export const generateSecurityReport = (data, title = 'NeuroShield Security Incident Analysis') => {
   const doc = new jsPDF();
@@ -61,7 +61,7 @@ export const generateSecurityReport = (data, title = 'NeuroShield Security Incid
     doc.text('Recommended Incident Mitigation Playbook', 14, currentY);
 
     const recRows = data.recommendations.map((rec, i) => [`Step ${i + 1}`, rec]);
-    doc.autoTable({
+    autoTable(doc, {
       startY: currentY + 4,
       head: [['Step', 'Action Required']],
       body: recRows,
@@ -87,7 +87,7 @@ export const generateSecurityReport = (data, title = 'NeuroShield Security Incid
       r.features ? `${r.features.protocol} / ${r.features.service}` : 'Standard'
     ]);
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: currentY + 4,
       head: [['Index', 'Attack Class', 'Confidence', 'Risk Rating', 'Protocol/Service']],
       body: rows,

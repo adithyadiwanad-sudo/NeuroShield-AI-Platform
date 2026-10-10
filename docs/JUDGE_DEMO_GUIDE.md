@@ -39,7 +39,7 @@ Before presenting: open **Integrations & deception → Check API health**. Confi
 | --- | --- |
 | Deep SOC / Executive Mode | Switch detailed technical view and manager briefing. Ctrl+Shift+L (Windows) or Cmd+Shift+L also toggles outside inputs. |
 | Pause feed / Resume feed | Stop or resume receiving background WebSocket events. Separate from replay playback. |
-| New scan | Open Network intrusion detection. |
+| New scan | Open the scan launcher; choose Scam intelligence, Network intrusion, or Voice & visual evidence. |
 | FASTAPI FEED banner | Connection and error state. The latency is receive-to-React-commit on this device, excluding network travel and final paint; under 50 ms is a target, not a guarantee. |
 | Pin investigation / Follow live signals | Keep the selected record or automatically follow the newest backend event. Selecting a feed row also pins it. |
 | KPI cards / flagged percentage gauge | Summaries of current session records, not organization-wide production telemetry. |
@@ -91,7 +91,7 @@ The ledger contains seeded synthetic incidents, live demo events and your scans.
 
 ## Incidents & findings — `/incidents`
 
-Switch **Kanban/List** using the grid/list buttons. Search and filter by severity. Select cards for the inspector. Move cards between Open, Triaged, In Progress, Resolved and Contained by drag/drop or the accessible **Move to** selector. Every change is recorded in the incident history. **Export filtered CSV** exports matching findings.
+The default **List** shows 12 findings per page. Use Previous/Next, search, severity, and the status-count buttons to narrow results. **Clear filters** restores all records. Counts in the summary describe the whole session; matching count and CSV export respect filters. Select a card, then use **Move selected finding** to change its status. **Board** retains all five lanes with horizontal scrolling and bounded vertical scrolling per lane. Drag/drop also changes status. **Pause incoming feed** keeps the list steady while reviewing; Resume reconnects it. Every change is recorded in the incident history. A zero Open count is valid when all current demo events have already been contained/resolved. **Export filtered CSV** exports all matching findings, not just the visible page.
 
 ## Inspector used across analysis pages
 
