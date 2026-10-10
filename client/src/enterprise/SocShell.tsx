@@ -264,7 +264,7 @@ export default function SocShell({
             <span>
               <Shield size={11} /> NEUROSHIELD / RESEARCH EDITION
             </span>
-            <span>LOCAL SESSION · HUMAN OVERSIGHT</span>
+            <span>BUILD {import.meta.env.VITE_BUILD_COMMIT} · HUMAN OVERSIGHT</span>
           </footer>
         </div>
       </div>

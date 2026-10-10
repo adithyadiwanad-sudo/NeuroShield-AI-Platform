@@ -38,7 +38,7 @@ const ScanLauncherPage = lazy(() => import("./enterprise/ScanLauncherPage"));
 import "./components/layout/dashboard.css";
 export const App = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const landing = useLocation().pathname === "/";
+  const landing = useLocation().pathname === "/about";
   const openAuth = () => setAuthModalOpen(true);
   const routes = (
     <Suspense
@@ -49,7 +49,8 @@ export const App = () => {
       }
     >
       <Routes>
-        <Route path="/" element={<LandingPage onOpenAuth={openAuth} />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/about" element={<LandingPage onOpenAuth={openAuth} />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/scan" element={<ScanLauncherPage />} />
         <Route

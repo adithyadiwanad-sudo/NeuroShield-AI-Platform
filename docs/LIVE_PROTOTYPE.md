@@ -156,6 +156,10 @@ Full presentation instructions and every page control: [Judge demo guide](JUDGE_
 
 ## Deployment verification and runtime
 
+The React entry route also redirects `/` to `/dashboard`; the former marketing page is available only at `/about`. The workspace footer shows the source commit, and `/build-info.json` records the full revision and build timestamp. Compare that revision with GitHub `main` when checking whether the production domain has received an update. Redeploying an older deployment rebuilds its old source; select the newest `main` deployment instead.
+
+Recharts uses the supported 3.x release. The npm `allowScripts` policy explicitly denies the optional core-js and Tesseract funding-message postinstall scripts; neither is required for the browser build. It does not grant blanket permission to dependency scripts.
+
 For the root vercel.json commands, keep Vercel's **Root Directory at the repository root (`.`)**, not `client`: each command already uses `--prefix client`. Installation uses `npm --prefix client install`, the build uses `npm --prefix client run build`, and only `client/dist` is published. The deployed `/` redirects to `/dashboard` so visitors enter the SOC workspace instead of the legacy landing page.
 
 `client/.env.production` supplies the public Render API (`https://neuroshield-live-api.onrender.com`) and WebSocket (`wss://neuroshield-live-api.onrender.com/ws/live-feed`) defaults. Vercel build environment variables override these values; remove stale `VITE_API_URL` / `VITE_WS_URL` overrides if using the `NEXT_PUBLIC_*` settings. Vite exposes both prefixes and replaces the two `process.env.NEXT_PUBLIC_*` references at build time. Redeploy after changing environment variables. Development still defaults to localhost.
