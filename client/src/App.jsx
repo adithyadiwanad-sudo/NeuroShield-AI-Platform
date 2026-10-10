@@ -4,6 +4,7 @@ import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { Auth } from "./pages/Auth";
 import { SocProvider } from "./enterprise/SocContext";
+import { GuidedTourProvider } from "./enterprise/GuidedTour";
 import SocShell from "./enterprise/SocShell";
 const LandingPage = lazy(() =>
   import("./pages/LandingPage").then((m) => ({ default: m.LandingPage })),
@@ -75,16 +76,18 @@ export const App = () => {
   );
   return (
     <SocProvider>
-      {landing ? (
-        <div className="min-h-screen bg-[#0B1020] text-gray-100">
-          <Navbar onOpenAuth={openAuth} />
-          <main>{routes}</main>
-          <Footer />
-        </div>
-      ) : (
-        <SocShell onOpenAuth={openAuth}>{routes}</SocShell>
-      )}
-      {authModalOpen && <Auth onClose={() => setAuthModalOpen(false)} />}
+      <GuidedTourProvider>
+        {landing ? (
+          <div className="min-h-screen bg-[#0B1020] text-gray-100">
+            <Navbar onOpenAuth={openAuth} />
+            <main>{routes}</main>
+            <Footer />
+          </div>
+        ) : (
+          <SocShell onOpenAuth={openAuth}>{routes}</SocShell>
+        )}
+        {authModalOpen && <Auth onClose={() => setAuthModalOpen(false)} />}
+      </GuidedTourProvider>
     </SocProvider>
   );
 };

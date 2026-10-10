@@ -90,6 +90,7 @@ export function ActionSuite({ incident, status, onAction, history = [] }) {
       </button>
       <button
         className="soc-button"
+        data-tour="tour-report"
         onClick={exportReport}
         disabled={exporting}
       >

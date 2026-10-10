@@ -1,3 +1,4 @@
+import { useTourAction } from "./GuidedTour";
 import React, { useState } from "react";
 import {
   LayoutGrid,
@@ -24,6 +25,21 @@ export default function IncidentsPage() {
     [severity, setSeverity] = useState("All"),
     [status, setStatus] = useState("All"),
     [page, setPage] = useState(1);
+  useTourAction("tour-contain", () => {
+    setView("board");
+    setQuery("");
+    setSeverity("All");
+    setStatus("All");
+    const selected =
+      soc.incidents.find((i) => i.id === soc.selectedId && i.demo && i.score >= 50) ||
+      soc.incidents.find((i) => i.demo && i.score >= 50);
+    if (!selected)
+      throw new Error(
+        "No demonstration finding available. Run a simulator scenario first.",
+      );
+    soc.select(selected.id);
+    soc.setStatus(selected.id, "Contained");
+  });
   const filtered = filterFindings(soc.incidents, query, severity, status);
   const paging = paginateFindings(filtered, page, 12);
   const incident = soc.incidents.find((i) => i.id === soc.selectedId);
@@ -46,6 +62,7 @@ export default function IncidentsPage() {
   const card = (i: Incident) => (
     <article
       key={i.id}
+      data-tour={i.id === soc.selectedId && view === "board" ? "tour-contain" : undefined}
       className={`es-incident-card ${i.id === soc.selectedId ? "selected" : ""}`}
       draggable
       onDragStart={(e) => {

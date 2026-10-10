@@ -26,6 +26,7 @@ export default function DashboardLayout({
           <motion.aside
             className="soc-inspector soc-card"
             aria-label="Incident investigation"
+            data-tour="tour-pin"
             initial={reduced ? false : { opacity: 0, x: 16 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4, delay: 0.08 }}

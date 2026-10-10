@@ -1,3 +1,4 @@
+import { useTourAction } from "../enterprise/GuidedTour";
 import React, { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Cpu, Play, Download, FlaskConical } from "lucide-react";
@@ -16,9 +17,12 @@ export const ModelPerformance = () => {
     },
     [],
   );
-  const run = async () => {
+  const run = async (signal) => {
+    signal = signal instanceof AbortSignal ? signal : undefined;
     const request = new AbortController();
     controller.current = request;
+    const abort = () => request.abort();
+    signal?.addEventListener("abort", abort, { once: true });
     setBusy(true);
     setError("");
     const timer = setTimeout(() => request.abort(), 60000);
@@ -37,11 +41,14 @@ export const ModelPerformance = () => {
             ? "Evaluation timed out; check API health and retry."
             : e.message,
         );
+      if (signal) throw e;
     } finally {
+      signal?.removeEventListener("abort", abort);
       clearTimeout(timer);
       if (controller.current === request) setBusy(false);
     }
   };
+  useTourAction("tour-evaluate", run);
   const download = () => {
     const url = URL.createObjectURL(
       new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
@@ -99,7 +106,7 @@ export const ModelPerformance = () => {
               </p>
             )}
           </section>
-          <div className="es-research-metrics">
+          <div data-tour="tour-evaluate" className="es-research-metrics">
             {["accuracy", "precision", "recall", "f1"].map((metric, index) => (
               <motion.div
                 className="es-panel es-tool-panel"

@@ -8,7 +8,7 @@
     "tesseract.js": false
   },
   "scripts": {
-    "test": "node src/components/dashboard/dashboard.test.js && node src/enterprise/domain.test.ts && node src/enterprise/transport.test.ts && node src/enterprise/networkInputs.test.js && node src/enterprise/findings.test.ts",
+    "test": "node src/components/dashboard/dashboard.test.js && node src/enterprise/domain.test.ts && node src/enterprise/transport.test.ts && node src/enterprise/networkInputs.test.js && node src/enterprise/findings.test.ts && node src/enterprise/tourPlan.test.js",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",

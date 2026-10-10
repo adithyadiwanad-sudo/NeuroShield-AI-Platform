@@ -1,3 +1,4 @@
+import { useTourAction } from "./GuidedTour";
 import React from "react";
 import { motion } from "framer-motion";
 import { FlaskConical, Zap, ArrowUpRight, Radio } from "lucide-react";
@@ -9,6 +10,10 @@ import PageHeader from "./PageHeader";
 import IncidentInspector from "./IncidentInspector";
 export default function SimulatorPage() {
   const soc = useSoc();
+  useTourAction("tour-honeypot", () => soc.setHoneypot(true));
+  useTourAction("tour-inject", () => {
+    soc.inject("prompt");
+  });
   const selected = soc.incidents.find((i) => i.id === soc.selectedId);
   return (
     <div className="es-page">
@@ -23,7 +28,7 @@ export default function SimulatorPage() {
       </PageHeader>
       <div className="es-split">
         <div className="es-monitor">
-          <div className="es-panel es-sandbox-banner">
+          <div data-tour="tour-honeypot" className="es-panel es-sandbox-banner">
             <FlaskConical size={32} />
             <div>
               <span className="es-eyebrow">
@@ -84,7 +89,10 @@ export default function SimulatorPage() {
               {soc.streaming ? "Pause stream" : "Start stream"}
             </button>
           </div>
-          <section className="es-panel es-event-journal">
+          <section
+            data-tour="tour-inject"
+            className="es-panel es-event-journal"
+          >
             <div className="es-panel-heading">
               <h2>Execution journal</h2>
               <span>LOCAL SESSION</span>

@@ -1,3 +1,4 @@
+import { useTourAction } from "../enterprise/GuidedTour";
 import React, { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Network, Play, Upload, Download, Activity } from "lucide-react";
@@ -48,22 +49,26 @@ export const NetworkIntrusion = () => {
       setError(e.message);
     }
   };
-  const run = async (e) => {
-    e.preventDefault();
+  const run = async (e, preset, signal) => {
+    e?.preventDefault();
     setError("");
     setBusy(true);
     const controller = new AbortController();
     request.current = controller;
+    const abort = () => controller.abort();
+    signal?.addEventListener("abort", abort, { once: true });
     const timeout = setTimeout(() => controller.abort(), 60000);
     try {
       if (endpoints.error) throw new Error(endpoints.error);
       const flows =
-        mode === "single"
+        preset || mode === "single"
           ? [
               Object.fromEntries(
                 flowFields.map((k) => [
                   k,
-                  flow[k] === "" ? NaN : Number(flow[k]),
+                  (preset || flow)[k] === ""
+                    ? NaN
+                    : Number((preset || flow)[k]),
                 ]),
               ),
             ]
@@ -77,7 +82,7 @@ export const NetworkIntrusion = () => {
       const res = await fetch(`${endpoints.apiUrl}/api/scan-network`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ flows, demo }),
+        body: JSON.stringify({ flows, demo: preset ? true : demo }),
         signal: controller.signal,
       });
       const data = await res.json();
@@ -101,11 +106,24 @@ export const NetworkIntrusion = () => {
             ? "Request cancelled or timed out."
             : e.message,
         );
+      if (signal) throw e;
     } finally {
+      signal?.removeEventListener("abort", abort);
       clearTimeout(timeout);
       if (request.current === controller) setBusy(false);
     }
   };
+  const guidedFlow = async (name, signal) => {
+    const prepared = presetFlow(name);
+    setMode("single");
+    setFlow(prepared);
+    setDemo(true);
+    await run(null, prepared, signal);
+  };
+  useTourAction("tour-flood", (signal) => guidedFlow("SYN flood", signal));
+  useTourAction("tour-normal", (signal) =>
+    guidedFlow("Normal traffic", signal),
+  );
   const download = () => {
     const url = URL.createObjectURL(
       new Blob([sampleCsv()], { type: "text/csv" }),
@@ -293,7 +311,15 @@ export const NetworkIntrusion = () => {
               )}
             </form>
           </motion.section>
-          <section className="es-panel es-tool-panel">
+          <section
+            data-tour={
+              Number(flow.SYN_Flag_Count) === 1 &&
+              Number(flow.ACK_Flag_Count) === 0
+                ? "tour-flood"
+                : "tour-normal"
+            }
+            className="es-panel es-tool-panel"
+          >
             <span className="es-eyebrow">02 / INVESTIGATION RESULTS</span>
             <h2>
               <Activity size={18} />{" "}

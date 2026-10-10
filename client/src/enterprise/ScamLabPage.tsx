@@ -1,3 +1,4 @@
+import { useTourAction } from "./GuidedTour";
 import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useReducedMotion } from "framer-motion";
@@ -95,6 +96,7 @@ export default function ScamLabPage() {
     value: string,
     controller: AbortController,
     demo = false,
+    guided = false,
   ) => {
     setBusy(true);
     setError("");
@@ -116,6 +118,7 @@ export default function ScamLabPage() {
             : "API analysis failed.",
       );
       setProgress("Analysis unavailable");
+      if (guided) throw e;
     } finally {
       clearTimeout(timeout);
       if (request.current === controller) setBusy(false);
@@ -187,6 +190,30 @@ export default function ScamLabPage() {
       }
     });
   };
+  const tourScenario = async (index: number, signal: AbortSignal) => {
+    cancel();
+    const controller = new AbortController();
+    request.current = controller;
+    const abort = () => {
+      controller.abort();
+      setBusy(false);
+      setHandsFree(false);
+    };
+    signal.addEventListener("abort", abort, { once: true });
+    try {
+      setHandsFree(true);
+      await scenario(index, controller, false);
+      signal.throwIfAborted();
+      const item = presentationScenarios[index];
+      await execute(item.kind, item.input, controller, true, true);
+    } finally {
+      signal.removeEventListener("abort", abort);
+      setHandsFree(false);
+    }
+  };
+  useTourAction("tour-url", (signal: AbortSignal) => tourScenario(0, signal));
+  useTourAction("tour-sms", (signal: AbortSignal) => tourScenario(1, signal));
+  useTourAction("tour-voice", (signal: AbortSignal) => tourScenario(2, signal));
   const runOffline = () => {
     cancel();
     try {
@@ -249,7 +276,16 @@ export default function ScamLabPage() {
               supplied spectral metadata, not uploaded audio classification.
             </p>
           </section>
-          <div className="es-panel es-lab">
+          <div
+            data-tour={
+              mode === "url"
+                ? "tour-url"
+                : mode === "audio"
+                  ? "tour-voice"
+                  : "tour-sms"
+            }
+            className="es-panel es-lab"
+          >
             <div className="es-tabs">
               {[
                 { id: "url", label: "URL intelligence", icon: Link2 },

@@ -139,3 +139,12 @@ The landing page introduces the project and links into the workspace. Account lo
 ## Suggested opening explanation
 
 “NeuroShield combines live event transport, multi-modal evidence inspection, explainable rule scoring and a human-controlled response workspace. This is an academic prototype: demonstration attacks are labeled, text inference is real but trained on a small project corpus, network and voice scoring use transparent heuristics, and enforcement is simulated.”
+
+
+## Guided evaluator presentation
+
+On Command Center, click **Start Evaluator Presentation**. The floating banner follows all seven pages: live dashboard and pinned investigation; auto-typed URL, SMS, and synthetic voice scans; SYN flood and normal network scans; Kanban containment and PDF export; prompt injection and honeypot simulation; measured cross-validation; and Executive Q&A. Allow roughly 2–3 minutes plus API cold-start time. Each highlight pauses for four seconds before acting and 4.5 seconds after the action completes.
+
+**Pause Tour** stops scheduled actions and cancels a tour-owned in-flight scan. Clicking page controls or using Escape pauses automatically. **Previous Step / Next Step** changes the feature section; when paused, press **Resume Tour** to execute it. Resume returns to that step's page and retries the current sub-action. Manual navigation remains available. **Exit Tour** removes the guide without changing route or deleting findings. The last step remains paused in Executive mode for questions. Tour changes such as demonstration findings, containment status, enabled feed, and honeypot routing remain visible after exit.
+
+API failures pause the guide with a retry/skip message instead of inventing results. SYN flood risk is the actual rule-engine response (the prepared fixture currently returns 100/100); baseline is independently analyzed. Voice uses illustrative spectral metadata, honeypot response is simulated, and cross-validation uses the small project-authored text dataset. PDF export is highlighted but not automatically downloaded. Existing user evidence is not overwritten; the containment step chooses only a demonstration finding.

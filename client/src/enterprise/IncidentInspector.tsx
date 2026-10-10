@@ -1,3 +1,4 @@
+import { useTourAction } from "./GuidedTour";
 import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -117,6 +118,7 @@ export default function IncidentInspector({
     () => setTab(incident?.phase === "Detected" ? "workflow" : "overview"),
     [incident?.id],
   );
+  useTourAction("tour-report", () => setTab("actions"));
   const tabs = [
     { id: "overview", label: "Overview", icon: ShieldAlert },
     { id: "workflow", label: "Agent", icon: Cpu },

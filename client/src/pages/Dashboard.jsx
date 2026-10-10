@@ -1,3 +1,4 @@
+import { useTour, useTourAction } from "../enterprise/GuidedTour";
 import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -63,6 +64,23 @@ const tabs = [
 
 export const Dashboard = () => {
   const soc = useSoc();
+  const tour = useTour();
+  useTourAction("tour-live", () => {
+    setMode("soc");
+    setDemo(true);
+    soc.setStreaming(true);
+    soc.setFollowLive(true);
+  });
+  useTourAction("tour-pin", () => {
+    if (!soc.incidents[0])
+      throw new Error("Waiting for a signal. Resume to retry.");
+    soc.select(soc.incidents[0].id);
+    setTab("details");
+  });
+  useTourAction("tour-executive", () => {
+    setMode("executive");
+    soc.setFollowLive(false);
+  });
   const [data, setData] = useState(null);
   const [demo, setDemo] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -240,6 +258,9 @@ export const Dashboard = () => {
           <p>Neural intelligence. Human control. Complete visibility.</p>
         </div>
         <div className="soc-header-actions">
+          <button className="soc-button" onClick={tour.start}>
+            Start Evaluator Presentation
+          </button>
           <button
             className="soc-button compact soc-mode-switch"
             onClick={() =>
@@ -296,7 +317,9 @@ export const Dashboard = () => {
       {demo && (
         <div className="es-live-notice" role="status">
           <div>
-            <strong>FASTAPI FEED · {soc.feedStatus.toUpperCase()}</strong>
+            <strong data-tour="tour-live">
+              FASTAPI FEED · {soc.feedStatus.toUpperCase()}
+            </strong>
             <p>
               {soc.feedError ||
                 "Live transport · automatically generated demonstration events, not captured attacks."}
@@ -561,7 +584,10 @@ export const Dashboard = () => {
         </>
       )}
       {mode === "executive" && (
-        <section className="soc-card soc-executive-summary">
+        <section
+          data-tour="tour-executive"
+          className="soc-card soc-executive-summary"
+        >
           <h2>Executive risk briefing</h2>
           <p>
             {incidents.length} visible records ·{" "}
