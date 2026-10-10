@@ -127,13 +127,13 @@ export default function SocShell({
               </NavLink>
             ))}
           </nav>
-          <div className="es-nav-label">EXISTING ANALYSIS TOOLS</div>
+          <div className="es-nav-label">ANALYSIS & RESEARCH</div>
           <nav className="es-secondary-nav">
             <NavLink to="/intrusion" onClick={() => setMobile(false)}>
-              Network CSV scanner <ArrowUpRight size={13} />
+              Network intrusion detection <ArrowUpRight size={13} />
             </NavLink>
             <NavLink to="/history" onClick={() => setMobile(false)}>
-              Scan archive <ArrowUpRight size={13} />
+              Detection history <ArrowUpRight size={13} />
             </NavLink>
             <NavLink to="/model-performance" onClick={() => setMobile(false)}>
               Model evaluation <ArrowUpRight size={13} />
@@ -141,10 +141,10 @@ export default function SocShell({
           </nav>
           <div className="es-sidebar-bottom">
             <div className="es-system-card">
-              <span className="es-dot" /> LOCAL ENGINE READY
+              <span className="es-dot" /> FEED {soc.feedStatus.toUpperCase()}
               <p>
-                Demonstration events run in your browser. Live services are
-                separate.
+                FastAPI supplies synthetic live events. Analyst actions remain
+                simulated.
               </p>
             </div>
             <button className="es-analyst" onClick={onOpenAuth}>
@@ -173,7 +173,9 @@ export default function SocShell({
             <div className="es-top-actions">
               <span className="es-stream-status">
                 <i className={`es-dot ${soc.streaming ? "pulsing" : ""}`} />
-                {soc.streaming ? "DEMO STREAM ACTIVE" : "DEMO WORKSPACE"}
+                {soc.feedStatus === "connected"
+                  ? "LIVE DEMO FEED"
+                  : `FEED ${soc.feedStatus.toUpperCase()}`}
               </span>
               <button
                 className="es-icon-button"

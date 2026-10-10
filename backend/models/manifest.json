@@ -1,0 +1,18 @@
+{
+  "training": "manually authored project examples, augmented; no held-out benchmark",
+  "originalExamples": 56,
+  "augmentedExamples": 164,
+  "sklearnVersion": "1.9.1",
+  "randomSeed": 42,
+  "examplesSha256": "ea998f331200108d5ccc66a626d107db77736cabcc16cbb57e290336721d7a7c",
+  "classes": [
+    "Banking Scam",
+    "Fake Legal Notice Fraud",
+    "Investment Scam",
+    "Job Scam",
+    "Lottery Scam",
+    "OTP Fraud",
+    "Phishing",
+    "Safe"
+  ]
+}

@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "test": "node src/components/dashboard/dashboard.test.js && node src/enterprise/domain.test.ts",
+    "test": "node src/components/dashboard/dashboard.test.js && node src/enterprise/domain.test.ts && node src/enterprise/transport.test.ts && node src/enterprise/networkInputs.test.js",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",

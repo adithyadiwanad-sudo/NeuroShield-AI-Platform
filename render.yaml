@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: neuroshield-live-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.9
+      - key: DEMO_FEED_ENABLED
+        value: 'true'
+      - key: FEED_INTERVAL_SECONDS
+        value: '2.5'
+      - key: CORS_ORIGINS
+        value: '*'

@@ -32,10 +32,10 @@ export function SurfaceRadar({ incident }: { incident?: Incident }) {
     "Defense evasion",
     "Network access",
   ];
-  const score = incident?.score || 45;
+  const score = incident?.score ?? 45;
   const data = axes.map((axis, i) => ({
     axis,
-    observed: Math.min(100, Math.max(10, score - [7, 24, 12, 4, 19, 0][i])),
+    observed: Math.min(100, Math.max(0, score - [7, 24, 12, 4, 19, 0][i])),
     expected: 20,
     residual:
       incident?.status === "Contained" || incident?.status === "Resolved"
@@ -53,6 +53,7 @@ export function SurfaceRadar({ incident }: { incident?: Incident }) {
           />
           <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
           <Radar
+            isAnimationActive={false}
             name="Observed (illustrative)"
             dataKey="observed"
             stroke="#ff6840"
@@ -60,12 +61,14 @@ export function SurfaceRadar({ incident }: { incident?: Incident }) {
             fillOpacity={0.18}
           />
           <Radar
+            isAnimationActive={false}
             name="Expected baseline"
             dataKey="expected"
             stroke="#64748b"
             fill="transparent"
           />
           <Radar
+            isAnimationActive={false}
             name="Residual (illustrative)"
             dataKey="residual"
             stroke="#10b981"

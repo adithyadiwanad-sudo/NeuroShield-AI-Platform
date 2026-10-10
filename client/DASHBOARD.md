@@ -1,5 +1,7 @@
 # NeuroShield Cyber-SOC presentation workspace
 
+For the live FastAPI feed, API scenarios, and deployment setup, see [Live prototype guide](../docs/LIVE_PROTOTYPE.md).
+
 Run `npm run dev` from `client` and open `/dashboard`. Run `npm test` for replay, audio descriptor, normalization, report integrity, and pagination checks; `npm run build` produces the application bundle.
 
 ## Presentation walkthrough

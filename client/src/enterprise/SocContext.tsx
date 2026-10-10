@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -14,6 +15,7 @@ import {
   updateStatus,
 } from "./domain";
 import type { Incident, IncidentStatus, Scenario } from "./domain";
+import { endpoints } from "./transport";
 
 const STORAGE = "neuroshield-soc-session-v1";
 type Context = {
@@ -31,22 +33,23 @@ type Context = {
   honeypot: boolean;
   setHoneypot: (v: boolean) => void;
   storageWarning: boolean;
+  feedStatus: string;
+  feedError: string;
+  followLive: boolean;
+  setFollowLive: (v: boolean) => void;
+  renderLatency: number | null;
 };
 const SocContext = createContext<Context | null>(null);
 function initialIncidents(): Incident[] {
   try {
     const saved = JSON.parse(sessionStorage.getItem(STORAGE) || "null");
     if (Array.isArray(saved) && saved.length && saved.every(isIncident))
-      return saved
-        .slice(0, 100)
-        .map((i) => ({
-          ...i,
-          autoManaged: false,
-          phase:
-            i.phase === "Detected" || i.phase === "Scoring"
-              ? "Scored"
-              : i.phase,
-        }));
+      return saved.slice(0, 100).map((i) => ({
+        ...i,
+        autoManaged: false,
+        phase:
+          i.phase === "Detected" || i.phase === "Scoring" ? "Scored" : i.phase,
+      }));
   } catch {
     /* Invalid or unavailable storage falls back to synthetic fixtures. */
   }
@@ -54,13 +57,120 @@ function initialIncidents(): Incident[] {
 }
 export function SocProvider({ children }: { children: React.ReactNode }) {
   const [incidents, setIncidents] = useState<Incident[]>(initialIncidents);
-  const [selectedId, select] = useState<string | null>(
+  const [selectedId, setSelectedId] = useState<string | null>(
       () => incidents[0]?.id ?? null,
     ),
-    [streaming, setStreaming] = useState(false),
+    [streaming, setStreaming] = useState(true),
     [sound, setSound] = useState(false),
     [honeypot, setHoneypot] = useState(true),
     [storageWarning, setStorageWarning] = useState(false);
+  const [feedStatus, setFeedStatus] = useState("connecting"),
+    [feedError, setFeedError] = useState(""),
+    [followLive, setFollowLive] = useState(true),
+    [renderLatency, setRenderLatency] = useState<number | null>(null);
+  const followRef = useRef(followLive);
+  followRef.current = followLive;
+  const receivedAt = useRef<number | null>(null);
+  const select = useCallback((id: string | null) => {
+    setFollowLive(false);
+    setSelectedId(id);
+  }, []);
+  useLayoutEffect(() => {
+    if (receivedAt.current !== null) {
+      setRenderLatency(
+        Math.round((performance.now() - receivedAt.current) * 10) / 10,
+      );
+      receivedAt.current = null;
+    }
+  }, [incidents]);
+  useEffect(() => {
+    if (!streaming) {
+      setFeedStatus("paused");
+      return;
+    }
+    if (endpoints.error) {
+      setFeedStatus("unconfigured");
+      setFeedError(endpoints.error);
+      return;
+    }
+    let stopped = false,
+      socket: WebSocket | null = null,
+      retry: ReturnType<typeof setTimeout> | undefined,
+      heartbeat: ReturnType<typeof setInterval> | undefined,
+      attempts = 0,
+      lastMessage = Date.now();
+    const connect = () => {
+      if (stopped) return;
+      setFeedStatus(attempts ? "reconnecting" : "connecting");
+      try {
+        socket = new WebSocket(endpoints.wsUrl);
+      } catch {
+        setFeedStatus("unconfigured");
+        setFeedError("Cannot connect to the configured WebSocket URL.");
+        return;
+      }
+      const current = socket;
+      current.onopen = () => {
+        if (stopped) return;
+        attempts = 0;
+        lastMessage = Date.now();
+        setFeedStatus("connected");
+        setFeedError("");
+        heartbeat = setInterval(() => {
+          if (Date.now() - lastMessage > 45000) {
+            current.close();
+            return;
+          }
+          if (current.readyState === WebSocket.OPEN) current.send("ping");
+        }, 15000);
+      };
+      current.onmessage = (event) => {
+        if (stopped) return;
+        lastMessage = Date.now();
+        try {
+          const message = JSON.parse(event.data);
+          if (message.type === "ready" && !message.feedEnabled)
+            setFeedError(
+              "Backend demo feed is disabled. REST analysis remains available.",
+            );
+          if (message.type !== "incident") return;
+          if (!isIncident(message.incident)) throw new Error();
+          receivedAt.current = performance.now();
+          setIncidents((old) =>
+            [
+              message.incident,
+              ...old.filter((i) => i.id !== message.incident.id),
+            ].slice(0, 100),
+          );
+          if (followRef.current) setSelectedId(message.incident.id);
+        } catch {
+          setFeedError("Invalid feed event ignored.");
+        }
+      };
+      current.onerror = () => {
+        if (!stopped)
+          setFeedError("Live connection unavailable; retrying automatically.");
+      };
+      current.onclose = () => {
+        clearInterval(heartbeat);
+        if (stopped) return;
+        setFeedStatus("reconnecting");
+        setFeedError("Live connection interrupted; retrying automatically.");
+        retry = setTimeout(
+          connect,
+          Math.min(30000, 1000 * 2 ** Math.min(attempts++, 5)) +
+            Math.random() * 300,
+        );
+      };
+    };
+    connect();
+    return () => {
+      stopped = true;
+      clearTimeout(retry);
+      clearInterval(heartbeat);
+      socket?.close();
+    };
+  }, [streaming]);
   const settings = useRef({ sound, honeypot });
   settings.current = { sound, honeypot };
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -80,12 +190,15 @@ export function SocProvider({ children }: { children: React.ReactNode }) {
     },
     [],
   );
-  const add = useCallback((incident: Incident) => {
-    setIncidents((old) =>
-      [incident, ...old.filter((i) => i.id !== incident.id)].slice(0, 100),
-    );
-    select(incident.id);
-  }, []);
+  const add = useCallback(
+    (incident: Incident) => {
+      setIncidents((old) =>
+        [incident, ...old.filter((i) => i.id !== incident.id)].slice(0, 100),
+      );
+      select(incident.id);
+    },
+    [select],
+  );
   const inject = useCallback(
     (kind: Scenario) => {
       const incident = makeIncident(kind);
@@ -136,16 +249,6 @@ export function SocProvider({ children }: { children: React.ReactNode }) {
     },
     [add],
   );
-  useEffect(() => {
-    if (!streaming) return;
-    let index = 0;
-    const kinds: Scenario[] = ["ddos", "sqli", "smishing", "voice"];
-    const timer = setInterval(
-      () => inject(kinds[index++ % kinds.length]),
-      12000,
-    );
-    return () => clearInterval(timer);
-  }, [streaming, inject]);
   const setStatus = useCallback(
     (id: string, status: IncidentStatus) =>
       setIncidents((old) =>
@@ -189,6 +292,11 @@ export function SocProvider({ children }: { children: React.ReactNode }) {
         honeypot,
         setHoneypot,
         storageWarning,
+        feedStatus,
+        feedError,
+        followLive,
+        setFollowLive,
+        renderLatency,
       }}
     >
       {children}

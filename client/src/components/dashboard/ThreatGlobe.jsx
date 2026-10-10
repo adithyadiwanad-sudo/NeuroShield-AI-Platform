@@ -130,21 +130,26 @@ function Radar({
   useFrame(() => {
     if (group.current) group.current.rotation.y = reduced ? 0 : frame * 0.006;
   });
-  const visible = incidents.slice(0, 8);
-  const activeIncident = incidents.find(
-    (incident) => incident.id === selectedId,
-  );
-  if (activeIncident && !visible.some((incident) => incident.id === selectedId))
-    visible[7] = activeIncident;
-  const nodes = visible.map((incident, index) => {
-    const angle = index * 2.4,
-      y = 1.25 - index * 0.34,
-      radius = Math.sqrt(1.84 ** 2 - y * y);
-    return {
-      incident,
-      position: [Math.sin(angle) * radius, y, Math.cos(angle) * radius],
-    };
-  });
+  const nodes = useMemo(() => {
+    const visible = incidents.slice(0, 8);
+    const activeIncident = incidents.find(
+      (incident) => incident.id === selectedId,
+    );
+    if (
+      activeIncident &&
+      !visible.some((incident) => incident.id === selectedId)
+    )
+      visible[7] = activeIncident;
+    return visible.map((incident, index) => {
+      const angle = index * 2.4,
+        y = 1.25 - index * 0.34,
+        radius = Math.sqrt(1.84 ** 2 - y * y);
+      return {
+        incident,
+        position: [Math.sin(angle) * radius, y, Math.cos(angle) * radius],
+      };
+    });
+  }, [incidents, selectedId]);
   const selected = nodes.find((node) => node.incident.id === selectedId);
   return (
     <group ref={group} rotation={[0.15, 0, 0.12]}>

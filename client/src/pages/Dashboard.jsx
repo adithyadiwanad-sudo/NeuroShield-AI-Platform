@@ -29,6 +29,7 @@ import {
   CommandMetrics,
   ThreatHeatmap,
   GeographicBars,
+  SurfaceRadar,
 } from "../enterprise/Visuals";
 import { Attribution } from "../enterprise/IncidentInspector";
 import DashboardLayout from "../components/layout/DashboardLayout";
@@ -93,6 +94,7 @@ export const Dashboard = () => {
   useEffect(() => {
     setFrame(0);
     setPlaying(Boolean(selectedId));
+    if (soc.followLive) setTab("details");
   }, [selectedId, demo]);
   useEffect(() => {
     if (!playing || !selectedId) return;
@@ -151,13 +153,14 @@ export const Dashboard = () => {
     }
   };
   useEffect(() => {
+    if (demo) return;
     fetchTelemetry();
     const timer = setInterval(fetchTelemetry, 30000);
     return () => {
       clearInterval(timer);
       controller.current?.abort();
     };
-  }, []);
+  }, [demo]);
   const incidents = demo
     ? soc.incidents
     : (data?.recentScans || []).map(normalizeScan);
@@ -263,17 +266,42 @@ export const Dashboard = () => {
           </span>
           <button
             className="soc-button compact"
-            onClick={fetchTelemetry}
-            disabled={loading}
-            aria-label="Refresh telemetry"
+            onClick={() => demo ? soc.setStreaming(!soc.streaming) : fetchTelemetry()}
+            disabled={!demo && loading}
+            aria-label={demo ? (soc.streaming ? "Pause live feed" : "Resume live feed") : "Refresh telemetry"}
           >
-            <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+            {demo ? (soc.streaming ? "Pause feed" : "Resume feed") : <RefreshCw size={15} className={loading ? "animate-spin" : ""} />}
           </button>
           <Link className="soc-button compact" to="/intrusion">
             New scan <ArrowUpRight size={15} />
           </Link>
         </div>
       </header>
+      {demo && (
+        <div className="es-live-notice" role="status">
+          <div>
+            <strong>FASTAPI FEED · {soc.feedStatus.toUpperCase()}</strong>
+            <p>
+              {soc.feedError ||
+                "Live transport · automatically generated demonstration events, not captured attacks."}
+            </p>
+          </div>
+          <div className="es-between">
+            <span className="es-latency">
+              {soc.renderLatency === null
+                ? "Waiting for first event"
+                : `${soc.renderLatency} ms receive → React commit`}
+            </span>
+            <button
+              className="es-button"
+              aria-pressed={soc.followLive}
+              onClick={() => soc.setFollowLive(!soc.followLive)}
+            >
+              {soc.followLive ? "Pin investigation" : "Follow live signals"}
+            </button>
+          </div>
+        </div>
+      )}
       <div className="soc-data-notice">
         <span>
           {demo
@@ -281,9 +309,6 @@ export const Dashboard = () => {
             : error ||
               "Analytics scan records · node positions are illustrative, not geolocated."}
         </span>
-        <button onClick={toggleDemo}>
-          {demo ? "Return to telemetry" : "Explore demo"}
-        </button>
       </div>
     </>
   );
@@ -391,6 +416,15 @@ export const Dashboard = () => {
           </div>
         </div>
       </section>
+      {demo && (
+        <section className="es-panel" style={{ padding: 18 }}>
+          <div className="es-panel-heading">
+            <h2>Threat surface radar</h2>
+            <span>ILLUSTRATIVE / ACTIVE SIGNAL</span>
+          </div>
+          <SurfaceRadar incident={incident} />
+        </section>
+      )}
       <section className="soc-card soc-chart">
         <div className="soc-card-heading">
           <h2>

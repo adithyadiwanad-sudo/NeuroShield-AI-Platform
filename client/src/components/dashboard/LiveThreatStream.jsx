@@ -9,6 +9,7 @@ export default function LiveThreatStream({
 }) {
   const [query, setQuery] = useState("");
   const [severity, setSeverity] = useState("All");
+  const [limit, setLimit] = useState(20);
   const filtered = incidents.filter(
     (i) =>
       `${i.id} ${i.title} ${i.source}`
@@ -53,7 +54,7 @@ export default function LiveThreatStream({
         <span>STATUS</span>
       </div>
       <div className="soc-log-list">
-        {filtered.map((i) => (
+        {filtered.slice(0, limit).map((i) => (
           <button
             key={i.id}
             className={`soc-log ${selectedId === i.id ? "selected" : ""}`}
@@ -94,6 +95,14 @@ export default function LiveThreatStream({
           <p className="soc-empty">No events match this view.</p>
         )}
       </div>
+      {filtered.length > limit && (
+        <button
+          className="soc-button compact"
+          onClick={() => setLimit((n) => n + 20)}
+        >
+          Show more ({limit} of {filtered.length})
+        </button>
+      )}
     </section>
   );
 }

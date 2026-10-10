@@ -72,8 +72,8 @@ export default function SimulatorPage() {
                 <Radio size={16} /> Continuous demo feed
               </h3>
               <p>
-                Generate a synthetic event every 12 seconds while this app
-                remains open.
+                Receive a synthetic backend event every 2.5 seconds. Connection:{" "}
+                {soc.feedStatus}.
               </p>
             </div>
             <button

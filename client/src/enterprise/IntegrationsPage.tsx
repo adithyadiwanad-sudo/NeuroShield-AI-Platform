@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Network, Shield, RefreshCw, Radio, Cpu } from "lucide-react";
-import api from "../services/api";
+import { endpoints } from "./transport";
 import PageHeader from "./PageHeader";
 import { useSoc } from "./SocContext";
 export default function IntegrationsPage() {
@@ -11,10 +11,14 @@ export default function IntegrationsPage() {
   const check = async () => {
     setChecking(true);
     try {
-      const response = await api.get("/health", { timeout: 8000 });
+      if (endpoints.error) throw new Error(endpoints.error);
+      const response = await fetch(`${endpoints.apiUrl}/api/health`, {
+        signal: AbortSignal.timeout(15000),
+      });
+      const data = await response.json();
       setHealth(
-        response.status === 200
-          ? "API reachable · model readiness not verified"
+        response.ok && data.service === "neuroshield-fastapi"
+          ? `FastAPI reachable · Text model ${data.models.text} · Audio ${data.models.audio}`
           : "Unexpected response",
       );
     } catch {
@@ -34,10 +38,10 @@ export default function IntegrationsPage() {
         <section className="es-panel es-integration">
           <Radio />
           <span className="es-badge safe">AVAILABLE</span>
-          <h2>Local event engine</h2>
+          <h2>Live WebSocket engine</h2>
           <p>
-            Shared incident state, session persistence, and an optional
-            synthetic stream. This is a browser demo feed.
+            Connection: {soc.feedStatus}. Shared incident state receives backend
+            demonstration events every 2.5 seconds. {soc.feedError}
           </p>
           <button
             className="es-button"
@@ -62,9 +66,10 @@ export default function IntegrationsPage() {
           <span className="es-badge low">SERVICE REQUIRED</span>
           <h2>Trained model services</h2>
           <p>
-            Live voice-cloning classification, transcription, domain
-            intelligence, and SHAP/LIME explanations need validated model
-            integrations. Local rules and audio measurements remain available.
+            Text inference uses the project-example TF-IDF classifier. Public
+            URL checks attempt registry age and TLS validation. Calibrated voice
+            classification, transcription, and SHAP/LIME still require validated
+            models.
           </p>
         </section>
       </div>
