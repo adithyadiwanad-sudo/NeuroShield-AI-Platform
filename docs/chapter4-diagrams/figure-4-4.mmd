@@ -1,0 +1,17 @@
+flowchart LR
+    N["Proposed authorized network sensor"]
+    C("Proposed packet capture and bidirectional flow aggregation")
+    IN["From 1.0: validated flow records"]
+    P21("2.1 Construct canonical numeric feature record")
+    P22("2.2 Evaluate four network rules")
+    P23("2.3 Compute risk and severity")
+    P24("2.4 Assemble evidence and incident")
+    OUT["To 4.0: network findings"]
+    N -.->|"Packets from an authorized observation point"| C
+    C -.->|"Proposed flow input to process 1.0"| IN
+    IN -->|"Validated records"| P21
+    P21 -->|"Ordered feature values"| P22
+    P22 -->|"Matched rules and weights"| P23
+    P23 -->|"Score and severity"| P24
+    P21 -->|"Original flow evidence"| P24
+    P24 -->|"Structured finding"| OUT

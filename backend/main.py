@@ -145,7 +145,7 @@ async def health():
 def response(result, demo):
     incident=incident_from(result,demo)
     analysis={key:result[key] for key in ('title','score','explanation','features','phrases','checks','axes','source','payload','signalType')}
-    return {'success':True,'analysis':analysis,'incident':incident,'threatScore':result['score'],'xaiReasoning':result['features'],'explanationMethod':'transparent rules; not SHAP/LIME','smishingProbability':result.get('smishingProbability'),'syntheticVoiceLikelihood':result.get('syntheticVoiceLikelihood'),'probabilityCalibrated':False,'domainAgeDays':result.get('domainAgeDays'),'sslStatus':result.get('sslStatus')}
+    return {'success':True,'analysis':analysis,'incident':incident,'threatScore':result['score'],'xaiReasoning':result['features'],'explanationMethod':'transparent rules; not SHAP/LIME','smishingProbability':result.get('smishingProbability'),'syntheticVoiceLikelihood':result.get('syntheticVoiceLikelihood'),'probabilityCalibrated':False,'domainAgeDays':result.get('domainAgeDays'),'sslStatus':result.get('sslStatus'),'availability':result.get('availability'),'httpStatus':result.get('httpStatus'),'normalizedUrl':result.get('normalizedUrl'),'category':result.get('category'),'cueFamilies':result.get('cueFamilies')}
 
 @app.post('/api/scan-url',dependencies=[Depends(rate_limit)])
 async def scan_url(body: UrlInput):

@@ -1,0 +1,24 @@
+flowchart TB
+    IN["From 1.0: validated multimodal input"]
+    T("3.1 Extract text cues and TF-IDF features")
+    ML("3.2 Infer text category or use rule fallback")
+    A("3.3 Score supplied voice metadata and transcript cues")
+    U("3.4 Evaluate URL structure and external observations")
+    L("3.5 Extract local audio descriptors or QR and OCR text")
+    R("3.6 Assemble typed analysis output")
+    D2[("D2 Trusted text classifier and vectorizer")]
+    E["DNS, RDAP and public TLS services"]
+    OUT["To 4.0: findings or local descriptors"]
+    IN -->|"Message text"| T
+    T -->|"Sparse text vector and rule evidence"| ML
+    D2 -->|"Classifier and vocabulary"| ML
+    ML -->|"Category, score and method"| R
+    IN -->|"Voice metadata and optional transcript"| A
+    A -->|"Heuristic review index and evidence"| R
+    IN -->|"URL"| U
+    U -->|"Bounded public URL queries"| E
+    E -->|"Address, registration and TLS observations"| U
+    U -->|"URL rule result"| R
+    IN -->|"Local audio or image file"| L
+    L -->|"Local descriptors or extracted content"| R
+    R -->|"Typed result with provenance"| OUT

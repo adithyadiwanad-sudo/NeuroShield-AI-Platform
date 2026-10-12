@@ -1,0 +1,24 @@
+flowchart LR
+    Tour["Guided presentation controller"]
+    Radar["SOC Radar and Command Center"]
+    Scam["Multi-Modal Scam Engine UI"]
+    Flow["NIDS Feature Extractor UI"]
+    Kanban["Kanban Triage"]
+    Context["Shared SOC Context"]
+    Transport["Validated REST transport"]
+    API["FastAPI analysis adapters"]
+    Deception["Browser Deception Router"]
+    Report["Incident PDF and CSV module"]
+    Tour -->|"Registered page actions"| Radar
+    Tour -->|"Prepared scans"| Scam
+    Tour -->|"Prepared flows"| Flow
+    Tour -->|"Demo lifecycle change"| Kanban
+    Radar <--> Context
+    Kanban <--> Context
+    Scam --> Transport
+    Flow --> Transport
+    Transport <--> API
+    Transport -->|"Validated scan result"| Context
+    Deception -->|"Simulated incident and history"| Context
+    Context -->|"Selected evidence"| Report
+    Kanban -->|"Export request"| Report

@@ -36,7 +36,7 @@ def evaluate_examples():
     from sklearn.metrics import accuracy_score, precision_recall_fscore_support, confusion_matrix
     examples = json.loads((Path(__file__).parent/'models'/'training_examples.json').read_text(encoding='utf-8'))
     texts, labels = zip(*examples)
-    pipeline = make_pipeline(TfidfVectorizer(ngram_range=(1, 3), max_features=6000),
+    pipeline = make_pipeline(TfidfVectorizer(ngram_range=(1, 2), max_features=6000),
                              LogisticRegression(C=3, max_iter=800, random_state=42))
     start = time.perf_counter()
     predictions = cross_val_predict(pipeline, texts, labels, cv=StratifiedKFold(2, shuffle=True, random_state=42))

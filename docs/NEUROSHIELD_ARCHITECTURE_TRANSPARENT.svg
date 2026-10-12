@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1040" viewBox="0 0 1800 1040">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10" fill="#526581"/></marker></defs>
+<text x="55" y="71" font-family="Arial,sans-serif" font-size="43" font-weight="700" fill="#192C48">NEUROSHIELD IDS</text>
+<text x="55" y="112" font-family="Arial,sans-serif" font-size="27" font-weight="400" fill="#526581">System architecture  /  Submit • Analyze • Investigate</text>
+<rect x="55" y="190" width="400" height="215" rx="22" fill="#E9FAFE" fill-opacity="0.94" stroke="#087F9C" stroke-width="3"/>
+<text x="79" y="239" font-family="Arial,sans-serif" font-size="29" font-weight="700" fill="#087F9C">01  Browser workspace</text>
+<text x="79" y="280" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">React + Vite • Vercel</text>
+<text x="79" y="314" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">Editable text / URL / flow inputs</text>
+<text x="79" y="348" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">Local audio + QR / OCR checks</text>
+<text x="79" y="382" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">SOC dashboard and inspector</text>
+<rect x="620" y="190" width="490" height="215" rx="22" fill="#F1EDFF" fill-opacity="0.94" stroke="#5D46B5" stroke-width="3"/>
+<text x="644" y="239" font-family="Arial,sans-serif" font-size="29" font-weight="700" fill="#5D46B5">02  FastAPI service</text>
+<text x="644" y="280" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">Python • Render</text>
+<text x="644" y="314" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">Validate requests</text>
+<text x="644" y="348" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">Route each input to its analyzer</text>
+<text x="644" y="382" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">Return score + evidence</text>
+<rect x="1260" y="165" width="480" height="270" rx="22" fill="#F1EDFF" fill-opacity="0.94" stroke="#5D46B5" stroke-width="3"/>
+<text x="1284" y="214" font-family="Arial,sans-serif" font-size="29" font-weight="700" fill="#5D46B5">03  Analysis modules</text>
+<text x="1284" y="255" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">Text: TF-IDF + Logistic Regression</text>
+<text x="1284" y="289" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">URL: domain and lexical checks</text>
+<text x="1284" y="323" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">Network flow: four scoring rules</text>
+<text x="1284" y="357" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">Audio metadata: scoring rules</text>
+<text x="1284" y="391" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">Trusted local model artifacts</text>
+<polyline points="455,240 620,240" fill="none" stroke="#526581" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="465" y="228" font-family="Arial,sans-serif" font-size="21" font-weight="400" fill="#526581">HTTPS request</text>
+<polyline points="620,358 455,358" fill="none" stroke="#526581" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="465" y="391" font-family="Arial,sans-serif" font-size="21" font-weight="400" fill="#526581">Private result</text>
+<polyline points="1110,230 1260,230" fill="none" stroke="#526581" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="1138" y="216" font-family="Arial,sans-serif" font-size="21" font-weight="400" fill="#526581">Analyze</text>
+<polyline points="1260,368 1110,368" fill="none" stroke="#526581" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="1138" y="401" font-family="Arial,sans-serif" font-size="21" font-weight="400" fill="#526581">Evidence</text>
+<rect x="620" y="530" width="490" height="160" rx="22" fill="#E9FAFE" fill-opacity="0.94" stroke="#087F9C" stroke-width="3"/>
+<text x="644" y="579" font-family="Arial,sans-serif" font-size="29" font-weight="700" fill="#087F9C">Live demo event producer</text>
+<text x="644" y="620" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">Synthetic incident every 2.5 s</text>
+<text x="644" y="654" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">Persistent WebSocket connection</text>
+<polyline points="620,610 530,610 530,465 255,465 255,405" fill="none" stroke="#526581" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="290" y="453" font-family="Arial,sans-serif" font-size="21" font-weight="400" fill="#526581">WSS demo feed</text>
+<rect x="55" y="565" width="400" height="160" rx="22" fill="#E9FBF4" fill-opacity="0.94" stroke="#087D66" stroke-width="3"/>
+<text x="79" y="614" font-family="Arial,sans-serif" font-size="29" font-weight="700" fill="#087D66">04  Investigate and export</text>
+<text x="79" y="655" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">Kanban triage • Session history</text>
+<text x="79" y="689" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">IEEE-style incident PDF</text>
+<polyline points="160,405 160,565" fill="none" stroke="#526581" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="1260" y="560" width="480" height="165" rx="22" fill="#FFF6DF" fill-opacity="0.94" stroke="#A66D09" stroke-width="3"/>
+<text x="1284" y="609" font-family="Arial,sans-serif" font-size="29" font-weight="700" fill="#A66D09">Deception demonstration</text>
+<text x="1284" y="650" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">Browser-controlled simulation</text>
+<text x="1284" y="684" font-family="Arial,sans-serif" font-size="24" font-weight="400" fill="#192C48">No real packet redirection</text>
+<polyline points="455,700 560,700 560,810 1500,810 1500,725" fill="none" stroke="#526581" stroke-width="3" stroke-dasharray="8 6" marker-end="url(#arrow)"/>
+<text x="750" y="798" font-family="Arial,sans-serif" font-size="21" font-weight="400" fill="#526581">Simulated response workflow</text>
+<text x="55" y="923" font-family="Arial,sans-serif" font-size="28" font-weight="700" fill="#192C48">How to explain it</text>
+<text x="55" y="971" font-family="Arial,sans-serif" font-size="26" font-weight="400" fill="#192C48">Inputs go to the API. Analyzers return evidence. The dashboard supports investigation and reporting.</text>
+<text x="55" y="1014" font-family="Arial,sans-serif" font-size="22" font-weight="400" fill="#526581">Solid paths: implemented data flow.  Demo telemetry and deception are explicitly simulated.</text>
+</svg>

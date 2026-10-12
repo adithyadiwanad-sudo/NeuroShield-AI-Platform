@@ -1,0 +1,191 @@
+{
+  "evaluation": {
+    "success": true,
+    "dataset": "Original project-authored text examples",
+    "samples": 56,
+    "folds": 2,
+    "seed": 42,
+    "classes": [
+      "Banking Scam",
+      "Fake Legal Notice Fraud",
+      "Investment Scam",
+      "Job Scam",
+      "Lottery Scam",
+      "OTP Fraud",
+      "Phishing",
+      "Safe"
+    ],
+    "sklearnVersion": "1.9.1",
+    "metrics": {
+      "accuracy": 0.5178571428571429,
+      "precision": 0.18632075471698112,
+      "recall": 0.1590909090909091,
+      "f1": 0.1358499095840868
+    },
+    "confusionMatrix": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3
+      ],
+      [
+        0,
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        8
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        26
+      ]
+    ],
+    "evaluationSeconds": 0.038,
+    "method": "Stratified 2-fold out-of-fold predictions; TF-IDF fitted separately inside each fold; no augmented copies.",
+    "limitation": "Small authored examples with similar templates. These are educational cross-validation results, not UNSW-NB15, NSL-KDD or CICIDS2017 benchmarks, and not proof of real-world accuracy."
+  },
+  "networkFixtures": {
+    "SYN Flood": {
+      "title": "Possible flood pattern",
+      "score": 100,
+      "source": "Submitted flow / port 80",
+      "signalType": "Network flow",
+      "payload": "{\"Destination_Port\": 80, \"Flow_Duration\": 500, \"Total_Fwd_Packets\": 850, \"Total_Bwd_Packets\": 2, \"Flow_Bytes_s\": 100000, \"Flow_Packets_s\": 1700, \"SYN_Flag_Count\": 1, \"ACK_Flag_Count\": 0}",
+      "provenance": "heuristic",
+      "explanation": "Matched: High packet rate (>=500/s), Forward / reverse packet imbalance, SYN without ACK, Elevated byte rate (>=100000/s). This is a transparent rule index, not a trained CICIDS classifier or proof of an attack.",
+      "features": [
+        {
+          "name": "High packet rate (>=500/s)",
+          "impact": 40
+        },
+        {
+          "name": "Forward / reverse packet imbalance",
+          "impact": 30
+        },
+        {
+          "name": "SYN without ACK",
+          "impact": 20
+        },
+        {
+          "name": "Elevated byte rate (>=100000/s)",
+          "impact": 10
+        }
+      ],
+      "phrases": [],
+      "checks": [
+        {
+          "label": "Method",
+          "value": "Four transparent flow rules"
+        },
+        {
+          "label": "Capture",
+          "value": "Caller-supplied telemetry; no packet capture"
+        }
+      ],
+      "axes": [
+        {
+          "axis": "High packet rate (>=500/s)",
+          "value": 40
+        },
+        {
+          "axis": "Forward / reverse packet imbalance",
+          "value": 30
+        },
+        {
+          "axis": "SYN without ACK",
+          "value": 20
+        },
+        {
+          "axis": "Elevated byte rate (>=100000/s)",
+          "value": 10
+        }
+      ]
+    },
+    "Normal Baseline": {
+      "title": "Baseline flow review",
+      "score": 0,
+      "source": "Submitted flow / port 443",
+      "signalType": "Network flow",
+      "payload": "{\"Destination_Port\": 443, \"Flow_Duration\": 15000, \"Total_Fwd_Packets\": 25, \"Total_Bwd_Packets\": 30, \"Flow_Bytes_s\": 380, \"Flow_Packets_s\": 3.6, \"SYN_Flag_Count\": 1, \"ACK_Flag_Count\": 1}",
+      "provenance": "heuristic",
+      "explanation": "No configured flow rules matched. This is a transparent rule index, not a trained CICIDS classifier or proof of an attack.",
+      "features": [],
+      "phrases": [],
+      "checks": [
+        {
+          "label": "Method",
+          "value": "Four transparent flow rules"
+        },
+        {
+          "label": "Capture",
+          "value": "Caller-supplied telemetry; no packet capture"
+        }
+      ],
+      "axes": []
+    }
+  }
+}

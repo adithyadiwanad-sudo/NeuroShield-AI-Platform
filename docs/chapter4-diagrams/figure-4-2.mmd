@@ -1,0 +1,12 @@
+flowchart LR
+    A["Analyst or evaluator"]
+    M["Model maintainer"]
+    E["DNS, RDAP and public TLS services"]
+    S("0 NeuroShield IDS")
+    A -->|"Messages, URLs, local files and flow records"| S
+    A -->|"Triage decisions and demo controls"| S
+    S -->|"Findings, demo telemetry, local descriptors and reports"| A
+    M -->|"Trusted model artifacts and authored examples"| S
+    S -->|"Model status and evaluation results"| M
+    S -->|"Public hostname and registry queries"| E
+    E -->|"Address, registration and TLS observations"| S

@@ -1,0 +1,41 @@
+flowchart TB
+    Analyst["Security analyst or evaluator"]
+    subgraph Browser["Client boundary — React UI served by Vercel"]
+        UI["Client UI: Command Center, Scam Lab and NIDS"]
+        Local["Local audio descriptors and QR or OCR extraction"]
+        State["Shared SOC state and browser session storage"]
+        Triage["Kanban triage and PDF or CSV export"]
+        Sim["Deception router simulation"]
+        UI --> Local
+        UI <--> State
+        State <--> Triage
+        Sim --> State
+    end
+    subgraph Render["Backend boundary — FastAPI on Render"]
+        API["REST API: validation and analysis coordination"]
+        NLP["NLP engine: TF-IDF and logistic regression"]
+        NIDS["NIDS pipeline: submitted flow rules"]
+        Multi["URL checks and voice metadata rules"]
+        Files[("Trusted model artifacts and training examples")]
+        Generator["Synthetic incident generator"]
+        WS["WebSocket layer: bounded per-client queues"]
+        API --> NLP
+        API --> NIDS
+        API --> Multi
+        Files --> NLP
+        Generator --> WS
+    end
+    Intel["Public DNS, TLS endpoint and registry RDAP"]
+    Sensor["Proposed packet sensor and flow aggregator"]
+    Router["Proposed authenticated response service"]
+    Honey["Proposed isolated honeypot virtual environment"]
+    Analyst --> UI
+    UI -->|"HTTPS analysis request"| API
+    API -->|"Private analysis response"| State
+    WS -->|"WSS synthetic incident events"| State
+    Multi <-->|"Bounded public URL checks"| Intel
+    UI -->|"Synthetic scenario request"| Sim
+    Sensor -.->|"Versioned flow records"| API
+    Triage -.->|"Authorized response request"| Router
+    Router -.->|"Approved redirection policy"| Honey
+    Honey -.->|"Isolated audit telemetry"| Router

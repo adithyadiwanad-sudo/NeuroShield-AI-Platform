@@ -222,5 +222,229 @@
   [
     "OTP for Swiggy food delivery login is 4920. Valid for 10 minutes. Do not share with delivery agent.",
     "Safe"
+  ],
+  [
+    "prabhat",
+    "Safe"
+  ],
+  [
+    "Good morning prabhat, how are you today?",
+    "Safe"
+  ],
+  [
+    "Hello Adithya, how was your day?",
+    "Safe"
+  ],
+  [
+    "Please send the class notes tomorrow.",
+    "Safe"
+  ],
+  [
+    "Urgent",
+    "Safe"
+  ],
+  [
+    "please",
+    "Safe"
+  ],
+  [
+    "Thank you",
+    "Safe"
+  ],
+  [
+    "See you soon",
+    "Safe"
+  ],
+  [
+    "Lunch is ready",
+    "Safe"
+  ],
+  [
+    "Meeting at ten",
+    "Safe"
+  ],
+  [
+    "Happy birthday",
+    "Safe"
+  ],
+  [
+    "I will call you after class.",
+    "Safe"
+  ],
+  [
+    "The project report is ready for review.",
+    "Safe"
+  ],
+  [
+    "Can we meet in the library?",
+    "Safe"
+  ],
+  [
+    "Your appointment is confirmed for Monday.",
+    "Safe"
+  ],
+  [
+    "Never share your OTP or password with anyone.",
+    "Safe"
+  ],
+  [
+    "The bank closes at five today.",
+    "Safe"
+  ],
+  [
+    "Please review the presentation when you have time.",
+    "Safe"
+  ],
+  [
+    "I paid the electricity bill yesterday.",
+    "Safe"
+  ],
+  [
+    "Our teacher explained phishing awareness today.",
+    "Safe"
+  ],
+  [
+    "Your order has been delivered.",
+    "Safe"
+  ],
+  [
+    "Are you coming to college tomorrow?",
+    "Safe"
+  ],
+  [
+    "Good evening everyone, welcome to the meeting.",
+    "Safe"
+  ],
+  [
+    "The job interview is scheduled for Tuesday.",
+    "Safe"
+  ],
+  [
+    "Check the official website for class schedules.",
+    "Safe"
+  ],
+  [
+    "URGENT: Your bank account is locked. Click http://bit.ly/bank-renew to verify your OTP immediately or face penalty.",
+    "Banking Scam"
+  ],
+  [
+    "Bank support: your account will be suspended. Enter your password at http://bank-verify.example now.",
+    "Banking Scam"
+  ],
+  [
+    "Final notice from bank: transfer funds immediately to avoid account freeze.",
+    "Banking Scam"
+  ],
+  [
+    "Your bank KYC expires today. Send your OTP to our support team immediately.",
+    "Banking Scam"
+  ],
+  [
+    "Bank manager requests your PIN and account password to stop a penalty.",
+    "Banking Scam"
+  ],
+  [
+    "Share your OTP immediately to prevent your account from being suspended.",
+    "OTP Fraud"
+  ],
+  [
+    "Support team needs you to send your OTP now. Do not tell anyone.",
+    "OTP Fraud"
+  ],
+  [
+    "Enter your OTP at http://otp-check.example immediately to restore access.",
+    "OTP Fraud"
+  ],
+  [
+    "Your bank payment is frozen. Provide your OTP to release the funds.",
+    "OTP Fraud"
+  ],
+  [
+    "Confirm your password and OTP now or face a penalty from the bank.",
+    "OTP Fraud"
+  ],
+  [
+    "Congratulations you won a lottery prize. Pay a registration fee immediately.",
+    "Lottery Scam"
+  ],
+  [
+    "Claim your lottery winnings by sending gift cards to our prize office now.",
+    "Lottery Scam"
+  ],
+  [
+    "Your prize expires within 2 hours. Transfer funds for the release fee.",
+    "Lottery Scam"
+  ],
+  [
+    "Congratulations! A lottery prize is reserved for you. Enter your bank details to claim.",
+    "Lottery Scam"
+  ],
+  [
+    "Final notice from court: pay the settlement immediately or face arrest.",
+    "Fake Legal Notice Fraud"
+  ],
+  [
+    "Police warning: transfer funds now to cancel the arrest warrant. Do not contact anyone.",
+    "Fake Legal Notice Fraud"
+  ],
+  [
+    "Tax department demands a settlement in gift cards to avoid legal action.",
+    "Fake Legal Notice Fraud"
+  ],
+  [
+    "Court support team requires your password and payment immediately to stop a penalty.",
+    "Fake Legal Notice Fraud"
+  ],
+  [
+    "Congratulations! You are selected for a part-time job earning Rs 5000/day. Telegram @job_admin now.",
+    "Job Scam"
+  ],
+  [
+    "Pay a registration fee immediately for your guaranteed part-time job.",
+    "Job Scam"
+  ],
+  [
+    "Recruitment fee is required today. Send gift cards to the hiring manager.",
+    "Job Scam"
+  ],
+  [
+    "Congratulations on your job offer. Send your bank details to Telegram @job_admin.",
+    "Job Scam"
+  ],
+  [
+    "Earn Rs 8000/day with no interview. Telegram our manager and pay a fee now.",
+    "Job Scam"
+  ],
+  [
+    "Guaranteed returns on your investment. Transfer funds immediately to our crypto wallet.",
+    "Investment Scam"
+  ],
+  [
+    "Act now for guaranteed returns. Wire your savings and keep this secret.",
+    "Investment Scam"
+  ],
+  [
+    "Your investment prize is ready. Pay a fee to unlock the withdrawal.",
+    "Investment Scam"
+  ],
+  [
+    "Our manager guarantees profits. Send your bank details and transfer funds now.",
+    "Investment Scam"
+  ],
+  [
+    "Your password expires immediately. Enter your credentials at http://login-update.example.",
+    "Phishing"
+  ],
+  [
+    "Support team: verify your password at http://secure-access.example or your account will be suspended.",
+    "Phishing"
+  ],
+  [
+    "Urgent security notice. Confirm your OTP using http://verify-account.example.",
+    "Phishing"
+  ],
+  [
+    "Your email account is suspended. Provide your password to the support team now.",
+    "Phishing"
   ]
 ]

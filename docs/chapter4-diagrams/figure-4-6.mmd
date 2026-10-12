@@ -1,0 +1,37 @@
+sequenceDiagram
+    autonumber
+    actor Analyst
+    participant UI as React Client
+    participant API as FastAPI
+    participant FE as Text Feature Extraction
+    participant ML as Text Classifier
+    participant State as Browser SOC State
+    participant Sim as Browser Deception Simulation
+    participant Feed as Synthetic Feed Producer
+    participant WS as WebSocket Broker
+    Analyst->>UI: Submit text for threat analysis
+    UI->>API: HTTPS POST /api/scan-text
+    API->>API: Validate body and acquire analysis slot
+    API->>FE: Extract rule evidence and TF-IDF vector
+    FE-->>API: Features and matched cues
+    alt Trusted text model is available
+        API->>ML: Predict probabilities and category
+        ML-->>API: Class probabilities
+    else Model is unavailable
+        API->>API: Use explicit rule fallback
+    end
+    API->>API: Build scored incident with provenance
+    API-->>UI: Private JSON analysis response
+    UI->>State: Add incident and pin selection
+    State-->>UI: Render evidence and risk
+    opt Analyst separately launches a simulation
+        Analyst->>UI: Select synthetic scenario
+        UI->>Sim: Start demonstration workflow
+        Sim->>State: Record simulated redirection or block
+    end
+    loop Independent demo feed while subscribers exist
+        Feed->>WS: Publish synthetic incident
+        WS-->>UI: WSS incident envelope
+        UI->>State: Validate and merge event
+    end
+    Note over API,WS: Private submitted scans are not globally broadcast

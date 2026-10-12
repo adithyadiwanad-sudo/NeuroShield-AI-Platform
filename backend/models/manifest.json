@@ -1,10 +1,17 @@
 {
-  "training": "manually authored project examples, augmented; no held-out benchmark",
-  "originalExamples": 56,
-  "augmentedExamples": 164,
+  "training": "manually authored project examples; no held-out benchmark",
+  "originalExamples": 112,
+  "trainingExamples": 112,
+  "augmentation": "none",
+  "ngramRange": [
+    1,
+    2
+  ],
+  "C": 3.0,
+  "maxIter": 800,
   "sklearnVersion": "1.9.1",
   "randomSeed": 42,
-  "examplesSha256": "ea998f331200108d5ccc66a626d107db77736cabcc16cbb57e290336721d7a7c",
+  "examplesSha256": "b19358d9c959e0ea57a4efc68b13b87df007b0e6c65949a60e1eff0e0b7bdfff",
   "classes": [
     "Banking Scam",
     "Fake Legal Notice Fraud",

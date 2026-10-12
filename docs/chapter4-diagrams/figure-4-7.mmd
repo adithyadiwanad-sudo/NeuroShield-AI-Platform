@@ -1,0 +1,34 @@
+sequenceDiagram
+    autonumber
+    actor Analyst
+    participant UI as Authorized Client
+    participant API as API and Identity Boundary
+    participant FE as Feature Extractor
+    participant ML as Validated Detection Model
+    participant DB as Durable Incident and Audit Store
+    participant Router as Response Policy Service
+    participant HP as Isolated Honeypot Environment
+    participant Events as Authorized Event Broker
+    participant WS as Tenant Scoped WebSocket Gateway
+    Analyst->>UI: Request threat analysis
+    UI->>API: Authenticated request with correlation ID
+    API->>API: Authorize scope and validate input
+    API->>FE: Extract versioned features
+    FE->>ML: Valid feature vector
+    ML-->>API: Prediction and uncertainty evidence
+    API->>DB: Persist scored incident
+    API->>Router: Evaluate permitted response policy
+    alt High risk and analyst approval or explicit preauthorization
+        Router->>HP: Apply scoped redirection through isolation adapter
+        HP-->>Router: Execution acknowledgement or failure
+        Router->>DB: Record actual response outcome
+    else Review only or insufficient evidence
+        Router->>DB: Record pending review without enforcement
+    end
+    DB-->>API: Committed incident revision
+    API-->>UI: Analysis and response status
+    DB->>Events: Publish committed event through transactional outbox
+    Events->>WS: Redacted event for authorized subscribers
+    WS-->>UI: Incident or response revision
+    UI->>UI: Deduplicate and update triage view
+    Note over Router,HP: Proposed operational integration, not current simulation

@@ -14,6 +14,8 @@ export type Analysis = {
   signalType: string;
 };
 const groups = [
+  { axis: "Reward", weight: 24, pattern: /\b(congratulations|lottery|prize|guaranteed returns?|earning\s+rs\s*\d+)\b/gi },
+  { axis: "Recruitment", weight: 22, pattern: /\b(part-time job|telegram|job_admin|recruitment fee)\b/gi },
   {
     axis: "Urgency",
     weight: 22,
@@ -79,7 +81,7 @@ export function analyzeMessage(text: string): Analysis {
     features.push({ name: "Link alongside persuasion cues", impact: 12 });
   }
   const score = Math.min(
-    100,
+    features.length <= 1 ? 20 : 100,
     features.reduce((total, f) => total + f.impact, 0),
   );
   return {
@@ -132,7 +134,11 @@ export const brands = [
 export function analyzeUrl(input: string): Analysis {
   let url: URL;
   try {
-    url = new URL(input.trim());
+    let normalized = input.trim().replace(/^[\s'"`]+|[\s'"`]+$/g, "");
+    if (/[\s\\]/.test(normalized)) throw new Error("Invalid URL");
+    normalized = normalized.replace(/^(https?):\/*/i, "$1://");
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(normalized)) normalized = "http://" + normalized;
+    url = new URL(normalized);
   } catch {
     throw new Error("Enter a complete HTTP or HTTPS URL.");
   }

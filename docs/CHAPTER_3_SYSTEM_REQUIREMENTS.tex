@@ -1,0 +1,222 @@
+% Standalone Chapter 3. Prefer XeLaTeX/LuaLaTeX with Times New Roman installed.
+% Style adaptation of the supplied Project Report.docx, which mixes page sizes
+% and journal layouts. This is a consistent academic chapter, not a facsimile.
+% To integrate: copy the chapter content into a report-class master document;
+% retain required packages there and remove this file's document wrappers.
+\documentclass[12pt,a4paper,oneside]{report}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{mathptmx} % Times-compatible fallback, not exact Times New Roman.
+\else
+  \usepackage{fontspec}
+  \IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{\setmainfont{TeX Gyre Termes}}
+\fi
+\usepackage[left=0.89in,right=0.89in,top=0.85in,bottom=0.85in]{geometry}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{longtable,array,booktabs}
+\usepackage{ragged2e}
+\usepackage[hidelinks]{hyperref}
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlength{\headheight}{15pt}
+\setlength{\emergencystretch}{2em}
+\setcounter{secnumdepth}{2}
+\titleformat{\chapter}[display]{\centering\bfseries\fontsize{16}{19.2}\selectfont}{CHAPTER \thechapter}{12pt}{\fontsize{16}{19.2}\selectfont}
+\titlespacing*{\chapter}{0pt}{0pt}{22pt}
+% Heading 2 in the supplied Word file is 12 pt bold italic, left aligned.
+\titleformat{\section}{\raggedright\fontsize{12}{14.4}\selectfont\bfseries\itshape}{\thesection}{0.7em}{}
+% Heading 3 in the supplied Word file is 9.5 pt bold, left aligned.
+\titleformat{\subsection}{\raggedright\fontsize{9.5}{11.4}\selectfont\bfseries}{\thesubsection}{0.7em}{}
+\titlespacing*{\section}{8.7pt}{12pt}{6pt}
+\titlespacing*{\subsection}{4.35pt}{8pt}{4pt}
+\setlist[itemize]{leftmargin=1.5em,itemsep=5pt,topsep=5pt}
+% Report-section header/footer parts in the supplied DOCX are empty.
+% Do not reproduce the unrelated journal's masthead or publication page numbers.
+\pagestyle{empty}
+\makeatletter
+\let\ps@plain\ps@empty
+\makeatother
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\req}[2]{\item \textbf{#1:} #2}
+
+\begin{document}
+\justifying
+\setcounter{chapter}{2}
+\chapter{SYSTEM REQUIREMENTS AND SPECIFICATION}
+
+NeuroShield IDS is an academic security-analysis platform that integrates network-flow inspection, text and URL analysis, audio metadata inspection, incident investigation, and controlled deception demonstrations. This chapter specifies the resources, software dependencies, functional behavior, and quality attributes required to operate and evaluate the system. The architecture separates a browser-based SOC interface from a Python analysis service, allowing the frontend and backend to be deployed independently.
+
+Requirements are distinguished from experimental results. The hardware capacities below are proposed planning baselines rather than measured minimum configurations. Functional requirements describe the intended behavior of the inspected prototype, while requirements for authenticated enforcement, durable storage, and distributed operation identify extensions needed for operational deployment. Performance targets must be validated using the experiments defined for those targets; they must not be reported as achieved merely because the interface is responsive.
+
+\section{Hardware Requirements}
+
+\subsection{Developer Workstation Requirements}
+
+The developer workstation must support a JavaScript development server, a Python virtual environment, a browser with developer tools, and local testing. Since text classification uses a compact TF-IDF and logistic-regression pipeline, a dedicated machine-learning GPU is not required. Browser graphics acceleration benefits the interactive topology view but does not accelerate the backend classifier.
+
+\begin{longtable}{L{0.20\textwidth}L{0.33\textwidth}L{0.35\textwidth}}
+\caption{Proposed developer workstation specifications}\label{tab:developer}\\
+\toprule Component & Planning baseline & Recommended configuration \\\midrule
+\endfirsthead
+\toprule Component & Planning baseline & Recommended configuration \\\midrule
+\endhead
+Processor & Modern 64-bit processor with two physical cores & Four or more cores for concurrent tools and tests \\
+Memory & 8 GB RAM & 16 GB RAM for parallel frontend, backend, and browser workloads \\
+Storage & 10 GB free space for source, dependencies, and artifacts & SSD with 20 GB free space and room for datasets \\
+Graphics & Integrated graphics with browser WebGL support & Hardware acceleration enabled for the 3D view \\
+Display & 1366 by 768 pixels & 1920 by 1080 pixels for the desktop SOC layout \\
+Connectivity & Internet access for installation and cloud integration & Stable broadband during demonstrations \\\bottomrule
+\end{longtable}
+
+Local development can continue with installed dependencies and prepared inputs, but external DNS, TLS, domain-registration checks, and cloud-hosted services require connectivity. A local demonstration should therefore disclose which results are local and which depend on external services.
+
+\subsection{Backend Server Requirements}
+
+A starting allocation of one virtual CPU, 1 GB RAM, and approximately 2 GB available storage is proposed for a low-concurrency academic demonstration. Two virtual CPUs and 2 GB RAM provide a more suitable starting point for simultaneous evaluations and multiple viewers. These allocations are capacity-planning assumptions and require measurement under the selected hosting plan.
+
+The server must retain the application and trusted model artifacts, provide outbound access for supported URL checks, and expose an HTTP service through a TLS-capable hosting layer. It must accommodate persistent WebSocket connections. Local disk or process memory must not be assumed to provide durable incident retention across deployment or restart. Operational retention requires an explicitly provisioned database or object store.
+
+A separate isolated host or virtual network is required if real honeypots are introduced. It must not share production credentials, unrestricted outbound access, or an unsegmented network with protected services. The current browser-based deception simulation does not require such infrastructure because it does not redirect packets.
+
+\subsection{Client and Evaluator Requirements}
+
+An evaluator should be able to use the deployed frontend without installing Node.js or Python. A proposed minimum is a dual-core computer with 4 GB RAM, a modern JavaScript-enabled browser, a 1366 by 768 display, and stable internet access. An 8 GB system with a full-HD display is preferable for viewing the split dashboard and presenting projected screenshots.
+
+The browser must support HTTPS, secure WebSockets, file selection, session storage, and PDF downloads. Audio inspection requires browser audio decoding support for the selected file format. WebGL is required for the 3D topology; a readable non-3D presentation must remain available when graphics initialization fails. A microphone is not required for demonstrations based on uploaded recordings or prepared metadata fixtures.
+
+\section{Software Requirements}
+
+\subsection{Operating Systems and Runtime Environment}
+
+Development is supported conceptually on 64-bit Windows, Linux, or macOS when the project's dependencies are available. The inspected local setup uses Windows and a Python virtual environment. A Linux-based cloud environment is appropriate for the backend. Operating-system compatibility must be confirmed through installation and build checks rather than inferred from the framework names alone.
+
+The frontend package declares Node.js version 24.x. Python 3.13 is the local reference runtime for this report; the deployment runtime must be compatible with the pinned scientific Python dependencies. Dependency manifests and lockfiles should govern reproducible installation. Upgrades require renewed testing rather than substituting newer versions without validation.
+
+\begin{longtable}{L{0.22\textwidth}L{0.25\textwidth}L{0.41\textwidth}}
+\caption{Software stack and responsibility}\label{tab:software}\\
+\toprule Technology & Project selection & Responsibility \\\midrule
+\endfirsthead
+\toprule Technology & Project selection & Responsibility \\\midrule
+\endhead
+Node.js and npm & Node.js 24.x & Dependency installation, development server, and frontend build \\
+React & React 18 & Component rendering, state-driven views, and interactive workflows \\
+Vite & Vite 8 & Frontend development and production asset generation \\
+Tailwind CSS & Version 4 & Design tokens, responsive layout, spacing, and visual styling \\
+Python & Local reference: 3.13 & Analysis service, model loading, and evaluation routines \\
+FastAPI / Flask & FastAPI selected; Flask not required & REST validation, analysis endpoints, and WebSocket transport \\
+Uvicorn & Project-pinned ASGI server & Execution of the FastAPI application \\
+Pydantic & Project-pinned version & Structured input validation and constraints \\
+scikit-learn and joblib & Project-pinned versions & TF-IDF, logistic regression, evaluation, and trusted model loading \\
+Framer Motion & Project dependency & Interface transitions and workflow animation \\
+Three.js and React Three Fiber & Project dependencies & Interactive three-dimensional topology visualization \\
+Recharts & Project dependency & Two-dimensional charts and analytical summaries \\
+jsPDF & Project dependency & Browser-generated incident PDF reports \\
+Vercel & Frontend hosting target & Delivery of the Vite-generated single-page application \\
+Render & Backend hosting target & Execution of the FastAPI service and WebSocket endpoint \\
+Git & Version control & Source revision tracking and deployment provenance \\\bottomrule
+\end{longtable}
+
+FastAPI is the active backend framework. Flask is an alternative Python web framework, not an additional service required by this architecture. The NIDS implementation uses transparent flow rules; inclusion of scikit-learn does not imply that every analysis modality uses a trained model.
+
+\subsection{Build and Deployment Configuration}
+
+The frontend must build from the \texttt{client/} directory and publish \texttt{client/dist}. Deep links must resolve to the single-page application rather than a legacy landing page. The backend must bind its ASGI service to the host and port supplied by the hosting environment.
+
+The frontend configuration must resolve \texttt{NEXT\_PUBLIC\_API\_URL} and \texttt{NEXT\_PUBLIC\_WS\_URL} through the project's explicit Vite configuration mechanism. Vite must not be assumed to expose these names merely because they use a Next.js naming convention. Local fallback values are \url{http://localhost:8000} and \url{ws://localhost:8000/ws/live-feed}. Cloud configuration must use HTTPS and WSS. Public frontend variables must never contain secrets because their resolved values are included in browser-delivered code.
+
+The decoupled deployment must configure permitted frontend origins and account for WebSocket support, server lifecycle, and hosting-plan constraints. Build identifiers should make it possible to distinguish a newly deployed client from an older cached or previously published application.
+
+\section{Functional Requirements}
+
+\subsection{SOC Command Center}
+\begin{itemize}
+\req{FR-SOC-01 --- Monitoring layout}{The interface shall provide a desktop layout with approximately 65\% of available workspace for monitoring and 35\% for a persistent investigation panel. Smaller screens shall retain readable navigation and access to investigation details.}
+\req{FR-SOC-02 --- Live ingestion}{The client shall receive valid incident envelopes through the WebSocket channel and update the visible feed. Connection, disconnection, and retry states shall be distinguishable from event severity. Synthetic telemetry shall be identifiable as demonstration data.}
+\req{FR-SOC-03 --- Incident selection}{Selecting a feed entry shall pin the corresponding investigation and update its evidence, score, explanation, and action controls without replacing it unexpectedly with another incoming event.}
+\req{FR-SOC-04 --- Visual exploration}{The system shall associate topology and chart changes with application events. Illustrative node coordinates shall not be presented as independently verified geographic or network locations.}
+\req{FR-SOC-05 --- Presentation control}{Prepared scenarios and guided navigation shall support demonstrations without manual entry from scratch. Users shall be able to pause, move between presentation steps, and exit the tour for manual inspection.}
+\end{itemize}
+
+\subsection{NIDS Packet Flow Inspector}
+\begin{itemize}
+\req{FR-NIDS-01 --- Flow submission}{The inspector shall accept editable flow records containing destination port, duration, forward and backward packet totals, byte rate, packet rate, SYN count, and ACK count. It shall support prepared fixtures and structured CSV input.}
+\req{FR-NIDS-02 --- Input validation}{The system shall reject missing fields, malformed numeric values, duplicate CSV headers, invalid bounds, and requests exceeding the allowed record count. The current request supports one to 100 flow records.}
+\req{FR-NIDS-03 --- Explainable scoring}{The backend shall calculate a bounded rule index and return each contributing condition. The SYN Flood fixture shall produce 100/100 Critical; the Normal fixture shall produce 0/100 with the application's Safe label.}
+\req{FR-NIDS-04 --- Method disclosure}{Results shall identify caller-supplied flow telemetry and heuristic analysis. The interface name does not imply that the application captures raw packets or contains a trained network benchmark classifier. A packet-capture sensor is an operational extension.}
+\end{itemize}
+
+\subsection{Multi-Modal Scam Lab}
+\begin{itemize}
+\req{FR-SCAM-01 --- Editable demonstrations}{The lab shall provide prepared URL, text, and voice-metadata scenarios. Users shall be able to inspect and modify inputs and deliberately execute an analysis; explicitly automated presentation scenarios may submit after their typing animation completes.}
+\req{FR-SCAM-02 --- Text analysis}{The service shall apply its TF-IDF and logistic-regression model when available, return the predicted category and aggregate non-Safe score, and disclose rule-based fallback behavior when model loading fails.}
+\req{FR-SCAM-03 --- URL analysis}{The service shall inspect supported URL indicators such as lexical impersonation, credential-related terms, transport status, and available registration information. Missing external evidence shall remain distinguishable from a safe finding.}
+\req{FR-SCAM-04 --- Audio and visual inspection}{The interface shall support browser-side audio descriptors and image-based QR/OCR inspection within file limits. Supplied audio metadata shall be identified as supplied evidence; a metadata rule score shall not be represented as validated voice-cloning probability.}
+\req{FR-SCAM-05 --- Evidence presentation}{Results shall show the input modality, method, score, explanation, and relevant checks. Heuristic feature impacts shall not be labeled as computed SHAP or LIME values unless those methods are actually implemented.}
+\end{itemize}
+
+\subsection{Kanban Triage}
+\begin{itemize}
+\req{FR-TRIAGE-01 --- Incident lifecycle}{The board shall organize incidents into Open, Triaged, In Progress, Resolved, and Contained states. Both drag-and-drop and explicit status selection shall support analyst updates.}
+\req{FR-TRIAGE-02 --- Manual ownership}{Manual status changes shall be retained against subsequent automatic simulator transitions. The record shall preserve a timestamped history suitable for explaining the investigation sequence.}
+\req{FR-TRIAGE-03 --- Retrieval and export}{Search and severity/status filters shall restrict visible findings. Filtered CSV export shall safely escape data and protect spreadsheet consumers from formula interpretation.}
+\req{FR-TRIAGE-04 --- Persistence scope}{The interface shall not imply shared, permanent case storage when records are retained only in the browser session. Multi-user durable case management requires a backend persistence extension.}
+\end{itemize}
+
+\subsection{Active Deception Honeypot}
+\begin{itemize}
+\req{FR-DECEPTION-01 --- Controlled simulation}{The system shall allow prepared attack injections and display scoring, blocking, or simulated routing transitions in a controlled demonstration. The deception setting and response history shall be visible.}
+\req{FR-DECEPTION-02 --- Response provenance}{A simulated Redirected or Contained state shall not be presented as evidence that real infrastructure changed. The system shall distinguish analyst decisions, requested actions, and confirmed enforcement outcomes.}
+\req{FR-DECEPTION-03 --- Operational extension}{Real redirection, if added, shall require an authorized enforcement adapter, an isolated honeypot target, scoped routing policy, action acknowledgment, expiration, rollback, and an audit record. This capability is a proposed extension to the present simulator.}
+\end{itemize}
+
+\subsection{IEEE Report Generator}
+\begin{itemize}
+\req{FR-REPORT-01 --- Portable evidence}{The system shall generate a downloadable IEEE-style incident PDF with identifier, timestamp, analysis provenance, feature evidence, explanation, and available response history.}
+\req{FR-REPORT-02 --- Digest scope}{The export shall include the SHA-256 digest of the defined incident-field representation and explain its scope. This digest shall not be described as a digital signature or an original uploaded-file hash.}
+\req{FR-REPORT-03 --- Readability}{Long evidence strings shall wrap and paginate without hiding report content. Export failures shall produce a recoverable user-visible state. IEEE-style formatting shall not imply IEEE certification.}
+\end{itemize}
+
+\section{Non-Functional Requirements}
+
+\subsection{Performance and Sub-second Latency}
+
+\begin{itemize}
+\req{NFR-PERF-01 --- Interaction target}{Routine local selection, filtering, and tab changes should provide visible feedback within 200 ms on the recommended client. This is a proposed acceptance target, not a measurement reported here.}
+\req{NFR-PERF-02 --- Analysis target}{Warm text and small flow-analysis requests should target a 95th-percentile request-to-result latency below one second under a declared demonstration load. URL checks, hosting cold starts, file decoding, and model evaluation must be measured separately.}
+\req{NFR-PERF-03 --- Telemetry timing}{The current synthetic producer interval is 2.5 seconds, or approximately 0.4 events per second. A sub-second event-delivery target concerns generation-to-display delay, not that interval. End-to-end measurements must account for clock alignment and actual rendering.}
+\req{NFR-PERF-04 --- Bounded work}{Client history, request sizes, concurrent work, and outbound queues shall be bounded to avoid uncontrolled memory growth. The current service uses per-client queues of 32 and a connection ceiling of 64; these are configured limits, not demonstrated capacity guarantees.}
+\end{itemize}
+
+Performance evaluation should state hardware, build revision, input sizes, concurrent client count, warm-up procedure, and percentile distributions. One successful request or one displayed update timer is insufficient to establish a service-level claim.
+
+\subsection{Security and Data Isolation}
+
+\begin{itemize}
+\req{NFR-SEC-01 --- Transport and validation}{Cloud communication shall use HTTPS/WSS. The service shall validate input schemas, enforce bounds, and constrain supported outbound URL checks. Secrets shall remain outside browser bundles and version-controlled files.}
+\req{NFR-SEC-02 --- Access control extension}{Operational deployment shall require authenticated identities and role-based authorization for investigation access and enforcement. CORS configuration is not authentication. A public prototype must not be assumed to provide tenant isolation.}
+\req{NFR-SEC-03 --- Isolation boundary}{Private scan results shall not be indiscriminately published to all connected users. Multi-user deployment shall introduce tenant-scoped channels, durable access-controlled storage, and documented retention and deletion rules.}
+\req{NFR-SEC-04 --- Trusted artifacts}{Only trusted operator-installed model artifacts shall be deserialized. Any real honeypot shall deny unnecessary egress, exclude production credentials, and remain isolated from protected workloads.}
+\end{itemize}
+
+\subsection{Scalability}
+
+The frontend and backend shall remain independently deployable. Static frontend distribution can be scaled separately from inference and connection handling. The current in-memory broadcast manager is process-local; adding backend workers does not automatically create a shared event stream. Horizontal scaling requires a shared broker, coordinated rate limits, and durable incident storage. Model evaluation should be isolated or scheduled if its resource use affects interactive requests. Load tests must determine practical capacity below the configured resource limits.
+
+\subsection{Availability}
+
+The interface shall indicate connectivity loss and retry transient WebSocket failures with bounded backoff. A disconnected view shall not continue to imply that displayed incidents are fresh live observations. The service shall expose health information and fail explicitly when required analysis resources are unavailable.
+
+A proposed academic demonstration acceptance test is a 30-minute session with repeated scans and no unhandled application crash, including a deliberate connection interruption followed by recovery. This is a test criterion, not a claimed uptime result. Production availability objectives require monitored deployment data, redundancy, durable state, and a selected hosting plan. The current bounded broadcast queue may discard older events for slow clients; durable replay is a separate requirement if lossless delivery is needed.
+
+\subsection{Usability and Accessibility}
+
+The interface shall pair severity colors with readable labels, provide keyboard-accessible controls and visible focus, and preserve alternatives to drag-and-drop interactions. Animations shall support reduced-motion preferences. Dense monitoring views shall remain readable on evaluator displays, with explicit empty, loading, and error states.
+
+Prepared scenarios shall reduce presentation effort while retaining input visibility and editability. Explanations shall distinguish evidence from inferred risk and simulated responses from confirmed actions. Evaluators shall be able to pause the guided presentation, inspect an incident, export a report, and return to the workflow without losing context. These requirements make the system's limitations inspectable as well as its features demonstrable.
+
+\end{document}

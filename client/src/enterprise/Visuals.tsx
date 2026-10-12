@@ -155,11 +155,11 @@ export function CommandMetrics({ incidents }: { incidents: Incident[] }) {
     <div className="es-command-metrics">
       <div className="es-panel es-kpi">
         <div className="es-between">
-          <span>OPEN FINDINGS</span>
+          <span>MATCHED CUES</span>
           <Layers size={14} />
         </div>
-        <strong>{active.toString().padStart(2, "0")}</strong>
-        <small>Session records · not a vulnerability scan</small>
+        <strong>{incidents.reduce((total, item) => total + item.features.length, 0)}</strong>
+        <small>Evidence cues across session findings</small>
         <div className="es-spark">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={spark}>
@@ -192,12 +192,12 @@ export function CommandMetrics({ incidents }: { incidents: Incident[] }) {
       </div>
       <div className="es-panel es-kpi">
         <div className="es-between">
-          <span>COMPLIANCE SCORE</span>
+          <span>HIGHEST RISK INDEX</span>
           <ShieldCheck size={14} />
         </div>
-        <strong>—</strong>
-        <small>No compliance audit connected</small>
-        <div className="es-compliance-arc" />
+        <strong>{incidents.length ? Math.max(...incidents.map(i => i.score ?? 0)) : 0}<small>/100</small></strong>
+        <small>Highest score across session findings</small>
+
       </div>
       <div className="es-panel es-kpi">
         <div className="es-between">

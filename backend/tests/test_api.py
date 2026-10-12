@@ -74,7 +74,7 @@ class ApiTests(unittest.TestCase):
 
 class IntelligenceTests(unittest.IsolatedAsyncioTestCase):
     async def test_tls_and_registry_results_are_used_without_visiting_page(self):
-        with patch('backend.analysis.public_addresses',AsyncMock(return_value=['93.184.216.34'])),patch('backend.analysis.tls_status',AsyncMock(return_value='Valid certificate')),patch('backend.analysis.domain_age',AsyncMock(return_value=(1,'1 day (registry)'))):
+        with patch('backend.analysis.public_addresses',AsyncMock(return_value=['93.184.216.34'])),patch('backend.url_probe.head_probe',AsyncMock(return_value=(200,'Valid certificate'))),patch('backend.analysis.domain_age',AsyncMock(return_value=(1,'1 day (registry)'))):
             result=await analyze_url('https://paypa1.com/verify')
             self.assertEqual(result['domainAgeDays'],1);self.assertEqual(result['sslStatus'],'Valid certificate')
             self.assertTrue(any(f['name'].startswith('Domain registered') for f in result['features']))

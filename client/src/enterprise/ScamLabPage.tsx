@@ -99,6 +99,7 @@ export default function ScamLabPage() {
     guided = false,
   ) => {
     setBusy(true);
+    setResult(null);
     setError("");
     setProgress("Analyzing with FastAPI…");
     const timeout = setTimeout(() => controller.abort(), 60000);
@@ -342,9 +343,26 @@ export default function ScamLabPage() {
                 </h2>
                 <p className="es-muted">
                   {mode === "url"
-                    ? "Check hostname structure and brand resemblance without visiting the destination."
+                    ? "Check URL cues and public-host reachability with a bounded HTTP header request."
                     : "Find urgency, coercion, payment requests, and credential-seeking phrases."}
                 </p>
+                {mode !== "audio" && <div className="es-quick-examples">
+                  <strong>Quick Demo Examples</strong>
+                  <p className="es-muted">Choose an example, edit it, then click Inspect signal.</p>
+                  <div className="es-scenario-chips">{(mode === "url" ? [
+                    ["Ordinary URL", "https://google.com"],
+                    ["Check availability", "https://kirankumard.com"],
+                    ["Media mirror cues", "https://5movierulz.academy"],
+                    ["Credential lure", "http://verify-bank-account-update.center"],
+                  ] : [
+                    ["Greeting", "Good morning prabhat, how are you today?"],
+                    ["Smishing Scam", "URGENT: Your bank account is locked. Click http://bit.ly/bank-renew to verify your OTP immediately or face penalty."],
+                    ["Job scam", "Congratulations! You are selected for a part-time job earning Rs 5000/day. Telegram @job_admin now."],
+                  ]).map(([label, value]) => <button type="button" className="es-button" key={label} disabled={busy || handsFree} onClick={() => {
+                    setInput(value); setResult(null); setError(""); setSampleDemo(mode !== "url");
+                    setProgress("Example ready — edit it or click Inspect signal.");
+                  }}>{label}</button>)}</div>
+                </div>}
                 <label className="es-field">
                   {mode === "audio"
                     ? "Synthetic transcript (spectral fixture supplied automatically)"
@@ -356,7 +374,7 @@ export default function ScamLabPage() {
                     maxLength={mode === "url" ? 2048 : 12000}
                     value={input}
                     disabled={busy || handsFree}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={(e) => { setInput(e.target.value); setResult(null); }}
                     placeholder={
                       mode === "url"
                         ? "https://example.com/account"
@@ -365,35 +383,6 @@ export default function ScamLabPage() {
                   />
                 </label>
                 <div className="es-between es-wrap">
-                  <div className="es-samples">
-                    <span>TRY A SAMPLE</span>
-                    <button
-                      type="button"
-                      disabled={busy || handsFree}
-                      onClick={() =>
-                        setInput(
-                          mode === "url"
-                            ? "http://paypa1.example/verify-account"
-                            : "URGENT: Your bank account will be suspended. Enter your OTP immediately at https://example.com/verify. Do not tell anyone.",
-                        )
-                      }
-                    >
-                      Suspicious
-                    </button>
-                    <button
-                      type="button"
-                      disabled={busy || handsFree}
-                      onClick={() =>
-                        setInput(
-                          mode === "url"
-                            ? "https://www.paypal.com/"
-                            : "Your appointment is confirmed for Monday at 10 AM. Never share your OTP or password.",
-                        )
-                      }
-                    >
-                      Routine
-                    </button>
-                  </div>
                   <button
                     className="es-button accent"
                     type="submit"

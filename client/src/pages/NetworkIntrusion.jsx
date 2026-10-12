@@ -168,6 +168,7 @@ export const NetworkIntrusion = () => {
               A SYN flood example is ready. Presets fill the fields; edit any
               value, then execute. No network traffic is sent.
             </p>
+            <h3>Quick Demo Examples</h3>
             <div className="es-scenario-chips">
               {Object.keys(flowPresets).map((name) => (
                 <button

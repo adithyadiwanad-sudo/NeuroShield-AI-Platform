@@ -1,0 +1,34 @@
+flowchart TB
+    A["Analyst or evaluator"]
+    M["Model maintainer"]
+    E["DNS, RDAP and public TLS services"]
+    P1("1.0 Validate and prepare observations")
+    P2("2.0 Analyze network flows")
+    P3("3.0 Analyze multimodal observations")
+    P4("4.0 Investigate, triage and export")
+    P5("5.0 Generate demo events and simulate response")
+    P6("6.0 Evaluate text model approach")
+    D1[("D1 Browser incident session")]
+    D2[("D2 Trusted model artifacts and examples")]
+    D3[("D3 In-memory demo event queues")]
+    A -->|"Observations and files"| P1
+    P1 -->|"Validation feedback"| A
+    P1 -->|"Validated flow records"| P2
+    P1 -->|"Validated multimodal input"| P3
+    D2 -->|"Text model and vectorizer"| P3
+    P3 -->|"Public URL queries"| E
+    E -->|"URL observations"| P3
+    P2 -->|"Network findings"| P4
+    P3 -->|"Multimodal findings or local descriptors"| P4
+    A -->|"Triage decisions and export request"| P4
+    P4 -->|"Incident and history updates"| D1
+    D1 -->|"Session findings and history"| P4
+    P4 -->|"Evidence, descriptors and reports"| A
+    A -->|"Scenario and honeypot demo controls"| P5
+    P5 -->|"Backend synthetic events"| D3
+    D3 -->|"WebSocket demonstration records"| P4
+    P5 -->|"Browser simulation and response history"| P4
+    M -->|"Approved artifacts and examples"| D2
+    M -->|"Evaluation request"| P6
+    D2 -->|"Original labeled examples"| P6
+    P6 -->|"Metrics and availability"| M

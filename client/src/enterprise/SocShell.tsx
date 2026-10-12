@@ -15,6 +15,8 @@ import {
   SlidersHorizontal,
   Volume2,
   VolumeX,
+  Sun,
+  Moon,
   ArrowUpRight,
 } from "lucide-react";
 import { useSoc } from "./SocContext";
@@ -38,7 +40,12 @@ export default function SocShell({
     soc = useSoc();
   const [mobile, setMobile] = useState(false),
     [appearance, setAppearance] = useState(false),
-    [theme, setTheme] = useState("ember"),
+    [theme, setTheme] = useState(() => {
+      try {
+        const saved = localStorage.getItem("neuroshield.theme");
+        return saved && ["ember", "aurora", "light"].includes(saved) ? saved : "aurora";
+      } catch { return "aurora"; }
+    }),
     [opacity, setOpacity] = useState(76);
   const current = [
     ...navigation,
@@ -47,6 +54,11 @@ export default function SocShell({
     { path: "/history", name: "Detection history" },
     { path: "/model-performance", name: "Model evaluation" },
   ].find((link) => link.path === location.pathname);
+  useEffect(() => {
+    try { localStorage.setItem("neuroshield.theme", theme); } catch { /* Storage may be disabled. */ }
+    document.documentElement.style.colorScheme = theme === "light" ? "light" : "dark";
+    return () => { document.documentElement.style.colorScheme = ""; };
+  }, [theme]);
   useEffect(() => {
     window.scrollTo(0, 0);
     setAppearance(false);
@@ -180,6 +192,12 @@ export default function SocShell({
               <strong>{current?.name || "Analysis tools"}</strong>
             </div>
             <div className="es-top-actions">
+              <button className="es-button es-theme-toggle"
+                aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
+                onClick={() => setTheme(theme === "light" ? "aurora" : "light")}>
+                {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
+                {theme === "light" ? "Dark" : "Light"}
+              </button>
               <span className="es-stream-status">
                 <i className={`es-dot ${soc.streaming ? "pulsing" : ""}`} />
                 {soc.feedStatus === "connected"
@@ -225,6 +243,9 @@ export default function SocShell({
                   </button>
                 </div>
                 <div className="es-toggle">
+                  <button aria-pressed={theme === "light"} onClick={() => setTheme("light")}>
+                    Professional / light
+                  </button>
                   <button
                     aria-pressed={theme === "ember"}
                     onClick={() => setTheme("ember")}

@@ -2257,3 +2257,55 @@ body:has(.es-tour-banner) { padding-bottom: 190px; }
 .es-tour-controls .es-button:disabled { opacity: .4; }
 .es-tour-highlight { outline: 2px solid #00f0ff !important; outline-offset: 5px; box-shadow: 0 0 30px #00f0ff30 !important; scroll-margin-bottom: 240px; scroll-margin-top: 90px; }
 @media(max-width:600px) { .es-tour-banner { bottom: 8px; padding: 12px; } .es-tour-controls .es-button { flex: 1 1 40%; } body:has(.es-tour-banner) { padding-bottom: 260px; } }
+
+/* Professional theme: scoped to the persistent SOC shell. */
+.enterprise-shell[data-theme="light"] {
+  --soc-accent: #0284c7; --soc-accent-wash: #e0f2fe; --soc-muted: #526277;
+  --soc-line: #cbd5e1; --color-cyber-void: #f8fafc; --color-cyber-slate: #ffffff;
+  --color-neon-cyan: #0284c7; --color-neon-amber: #c2410c;
+  color: #172b43; background: #f8fafc;
+}
+.enterprise-shell[data-theme="light"] :is(.es-sidebar,.es-topbar,.es-panel,.es-inspector,.es-appearance,.es-modal,.soc-panel,.soc-card) {
+  background: #ffffffed; color: #172b43; border-color: #cbd5e1;
+  box-shadow: 0 5px 24px #0f172a08;
+}
+.enterprise-shell[data-theme="light"] :is(h1,h2,h3,h4,strong) { color: #173e61; }
+.enterprise-shell[data-theme="light"] :is(p,small,label,dt,.es-muted,.es-eyebrow) { color: #526277; }
+.enterprise-shell[data-theme="light"] :is(input,textarea,select,option,.es-button,.es-tabs button,.es-nav a) {
+  color: #23425e; background-color: #f1f5f9; border-color: #cbd5e1;
+}
+.enterprise-shell[data-theme="light"] :is(.es-button.accent,.es-tabs button[aria-pressed="true"],.es-nav a.active) {
+  background: #e0f2fe; color: #075985; border-color: #38bdf8;
+}
+.enterprise-shell[data-theme="light"] :is(.es-kpi,.es-note,.es-checks > div,.es-finding,.es-kanban-column,.es-kanban-card,.es-lab,.es-result,.es-presentation) {
+  background-color: #ffffff; border-color: #cbd5e1; color: #172b43;
+}
+.enterprise-shell[data-theme="light"] .soc-dashboard {
+  --soc-muted: #526277; --soc-line: #cbd5e1; color: #172b43; background: #f8fafc;
+}
+.enterprise-shell[data-theme="light"] :is(.es-phrase-list mark,.es-scenario-chips button:hover) {
+  color: #9a3412; background: #fff1e6; border-color: #fdba74;
+}
+.enterprise-shell[data-theme="light"] :is(.recharts-text,.recharts-cartesian-axis-tick-value) { fill: #526277; }
+.es-quick-examples { margin: 16px 0; padding: 14px; border: 1px solid var(--soc-line); border-radius: 12px; }
+.es-quick-examples p { margin: 6px 0 10px; }
+.enterprise-shell[data-theme="light"] { --muted: #526277; --line: #cbd5e1; --accent-wash: #e0f2fe; }
+.enterprise-shell[data-theme="light"] :is(dd,code,.es-summary,.es-nav-item,.es-secondary-nav a,.es-inspector-tabs button,.es-selected-incident,.es-provenance,.es-kpi > strong,.es-risk-overview h3) { color: #334155; }
+.enterprise-shell[data-theme="light"] :is(.es-system-card,.es-workspace-avatar,.es-workspace,.es-facts,.es-inspector-footer,.es-selected-incident) { background: #f1f5f9; border-color: #cbd5e1; }
+.enterprise-shell[data-theme="light"] .es-nav-item.active { background: #e0f2fe; color: #075985; }
+.enterprise-shell[data-theme="light"] :is(.es-badge.safe,.es-badge.low) { color: #047857; background: #ecfdf5; }
+.enterprise-shell[data-theme="light"] .es-badge.medium { color: #92400e; background: #fffbeb; }
+.enterprise-shell[data-theme="light"] :is(.es-badge.high,.es-badge.critical) { color: #be123c; background: #fff1f2; }
+.enterprise-shell[data-theme="light"] .es-risk-gauge text { fill: #173e61; }
+.enterprise-shell[data-theme="light"] :is(.soc-button,.soc-tabs button,.soc-log,.soc-step > button,.soc-selected,.soc-section-label,.soc-legend,.soc-facts dd,.soc-risk-matrix code,.soc-agent-chip) { color: #334155; }
+.enterprise-shell[data-theme="light"] :is(.soc-inspector,.soc-selected,.soc-agent-banner,.soc-step,.soc-note,.soc-data-notice,.soc-search,.soc-log,.soc-button,.soc-dropzone) { background: #f1f5f9; border-color: #cbd5e1; }
+.enterprise-shell[data-theme="light"] :is(.soc-step.active,.soc-log.selected,.soc-button.primary) { background: #e0f2fe; border-color: #38bdf8; color: #075985; }
+.enterprise-shell[data-theme="light"] :is(.soc-eyebrow,.soc-muted,.soc-log small,.soc-log code,.soc-inspector-footer,.soc-tabs button,.soc-section-label span) { color: #526277; }
+.enterprise-shell[data-theme="light"] .soc-button.danger { color: #be123c; background: #fff1f2; }
+.enterprise-shell[data-theme="light"] :is(.soc-gauge strong,.soc-ring text) { color: #173e61; fill: #173e61; }
+.enterprise-shell[data-theme="light"] .es-mini-ring > span { background: white; }
+.enterprise-shell[data-theme="light"] :is(.es-findings-summary button,.es-incident-card,.es-board-column,.es-column,.es-launch-card,.es-history-row,.es-setting-row,.es-playbook,.es-playbook-card) { background: #fff; border-color: #cbd5e1; color: #334155; }
+.enterprise-shell[data-theme="light"] :is(.es-finding-score,.es-findings-page .es-incident-card,.es-checks dd) { color: #334155; }
+.enterprise-shell[data-theme="light"] .es-findings-summary button[aria-pressed="true"] { background: #e0f2fe; color: #075985; }
+.enterprise-shell[data-theme="light"] :is(.es-search,.es-toggle,.es-toggle button,.es-kanban > section) { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
+.enterprise-shell[data-theme="light"] .es-toggle button[aria-pressed="true"] { background: #e0f2fe; color: #075985; }

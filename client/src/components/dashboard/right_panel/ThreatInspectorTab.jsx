@@ -155,12 +155,8 @@ export default function ThreatInspectorTab({
           <dd>{incident.signalType || "Scan record"}</dd>
         </div>
         <div>
-          <dt>Confidence</dt>
-          <dd>
-            {incident.demo
-              ? `${incident.confidence ?? 94.6}% · demo`
-              : "Not supplied"}
-          </dd>
+          <dt>Provenance</dt>
+          <dd>{incident.provenance || (incident.demo ? "simulation" : "Not supplied")}</dd>
         </div>
         <div>
           <dt>Observed</dt>
