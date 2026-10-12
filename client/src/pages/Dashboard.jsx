@@ -1,4 +1,4 @@
-import { useTour, useTourAction } from "../enterprise/GuidedTour";
+import { useTourAction } from "../enterprise/GuidedTour";
 import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -64,7 +64,6 @@ const tabs = [
 
 export const Dashboard = () => {
   const soc = useSoc();
-  const tour = useTour();
   useTourAction("tour-live", () => {
     setMode("soc");
     setDemo(true);
@@ -258,9 +257,6 @@ export const Dashboard = () => {
           <p>Neural intelligence. Human control. Complete visibility.</p>
         </div>
         <div className="soc-header-actions">
-          <button className="soc-button" onClick={tour.start}>
-            Start Evaluator Presentation
-          </button>
           <button
             className="soc-button compact soc-mode-switch"
             onClick={() =>

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useSoc } from "./SocContext";
 import "./enterprise.css";
+import { ThemeContext } from "./ThemeContext";
 const navigation = [
   { path: "/dashboard", name: "Command center", icon: Activity },
   { path: "/scam-lab", name: "Multi-modal scam lab", icon: ScanLine },
@@ -74,6 +75,7 @@ export default function SocShell({
     return () => window.removeEventListener("keydown", close);
   }, []);
   return (
+    <ThemeContext.Provider value={theme}>
     <MotionConfig reducedMotion="user">
       <div
         className="enterprise-shell"
@@ -290,5 +292,6 @@ export default function SocShell({
         </div>
       </div>
     </MotionConfig>
+    </ThemeContext.Provider>
   );
 }

@@ -1,8 +1,13 @@
-import React, { Component, useMemo, useRef } from "react";
+import React, { Component, useContext, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useReducedMotion } from "framer-motion";
 import { Globe } from "lucide-react";
 import { Vector3, Quaternion, QuadraticBezierCurve3 } from "three";
+import { ThemeContext } from "../../enterprise/ThemeContext";
+const palettes = {
+  light: { surface: "#e0f2fe", mesh: "#0284c7", points: "#0369a1", link: "#0284c7", safe: "#059669", critical: "#db2777", warning: "#ea580c" },
+  dark: { surface: "#08151e", mesh: "#125167", points: "#00F0FF", link: "#00F0FF", safe: "#00FF9D", critical: "#FF007F", warning: "#FFB800" },
+};
 class GlobeBoundary extends Component {
   state = { failed: false };
   static getDerivedStateFromError() {
@@ -26,6 +31,7 @@ function SignalNode({
   onSelect,
   frame,
   reduced,
+  palette,
 }) {
   const orientation = useMemo(
     () =>
@@ -37,10 +43,10 @@ function SignalNode({
   );
   const color =
     incident.severity === "Safe" || incident.severity === "Low"
-      ? "#00FF9D"
+      ? palette.safe
       : incident.severity === "Critical"
-        ? "#FF007F"
-        : "#FFB800";
+        ? palette.critical
+        : palette.warning;
   const pulse = reduced ? 0.45 : (frame % 20) / 20;
   return (
     <group position={position}>
@@ -78,7 +84,7 @@ function SignalNode({
     </group>
   );
 }
-function SignalLink({ start, end, frame, reduced }) {
+function SignalLink({ start, end, frame, reduced, palette }) {
   const curve = useMemo(() => {
     const a = new Vector3(...start),
       b = new Vector3(...end);
@@ -95,11 +101,11 @@ function SignalLink({ start, end, frame, reduced }) {
     <group>
       <mesh raycast={() => null}>
         <tubeGeometry args={[curve, 32, 0.007, 5, false]} />
-        <meshBasicMaterial color="#00F0FF" transparent opacity={0.35} />
+        <meshBasicMaterial color={palette.link} transparent opacity={0.55} />
       </mesh>
       <mesh position={point} raycast={() => null}>
         <sphereGeometry args={[0.025, 8, 8]} />
-        <meshBasicMaterial color="#00F0FF" />
+        <meshBasicMaterial color={palette.link} />
       </mesh>
     </group>
   );
@@ -110,7 +116,8 @@ function Radar({
   onSelect,
   reduced,
   frame = 0,
-  playing = false,
+  palette,
+  light,
 }) {
   const group = useRef();
   const points = useMemo(() => {
@@ -155,15 +162,15 @@ function Radar({
     <group ref={group} rotation={[0.15, 0, 0.12]}>
       <mesh>
         <sphereGeometry args={[1.76, 36, 24]} />
-        <meshBasicMaterial color="#08151e" />
+        <meshBasicMaterial color={palette.surface} />
       </mesh>
       <mesh>
         <sphereGeometry args={[1.8, 28, 18]} />
         <meshBasicMaterial
-          color="#125167"
+          color={palette.mesh}
           wireframe
           transparent
-          opacity={0.24}
+          opacity={light ? 0.3 : 0.24}
         />
       </mesh>
       <points>
@@ -177,7 +184,7 @@ function Radar({
         </bufferGeometry>
         <pointsMaterial
           size={0.017}
-          color="#00F0FF"
+          color={palette.points}
           transparent
           opacity={0.7}
         />
@@ -191,6 +198,7 @@ function Radar({
           onSelect={onSelect}
           frame={frame}
           reduced={reduced}
+          palette={palette}
         />
       ))}
       {selected &&
@@ -205,6 +213,7 @@ function Radar({
               end={node.position}
               frame={frame}
               reduced={reduced}
+          palette={palette}
             />
           ))}
     </group>
@@ -212,6 +221,8 @@ function Radar({
 }
 export default function ThreatGlobe(props) {
   const reduced = useReducedMotion();
+  const light = useContext(ThemeContext) === "light";
+  const palette = light ? palettes.light : palettes.dark;
   return (
     <GlobeBoundary>
       <Canvas
@@ -224,8 +235,9 @@ export default function ThreatGlobe(props) {
           </div>
         }
       >
-        <Radar {...props} reduced={reduced} />
+        <Radar {...props} reduced={reduced} palette={palette} light={light} />
       </Canvas>
     </GlobeBoundary>
   );
 }
+
